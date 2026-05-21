@@ -1,13 +1,34 @@
-import React from 'react';
-import { View, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, ScrollView, Alert } from 'react-native';
 import { Container } from '../../components/ui/Container';
 import { Texto } from '../../components/ui/Texto';
 import { Card } from '../../components/ui/Card';
 import { Botao } from '../../components/ui/Botao';
 import { useTheme } from '../../hooks/useTheme';
+import { supabase } from '../../db/supabase-client';
 
 export default function HomeSandboxScreen() {
   const { toggleTheme } = useTheme();
+  const [loadingDb, setLoadingDb] = useState(false);
+
+  const testarSupabase = async () => {
+    setLoadingDb(true);
+    try {
+      const { error, count } = await supabase
+        .from('exercicios')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        Alert.alert('Erro Supabase', error.message);
+      } else {
+        Alert.alert('Sucesso', `Conexão bem-sucedida! Exercícios na base: ${count}`);
+      }
+    } catch (err: any) {
+      Alert.alert('Erro Inesperado', err.message);
+    } finally {
+      setLoadingDb(false);
+    }
+  };
 
   return (
     <Container>
@@ -15,8 +36,20 @@ export default function HomeSandboxScreen() {
         <View className="gap-2">
           <Texto variant="displayL">Hypertropos</Texto>
           <Texto variant="bodyL" color="secondary">
-            Sistema de Design Tokens em funcionamento.
+            Sistema de Design Tokens e Dados em funcionamento.
           </Texto>
+        </View>
+
+        {/* Teste de Dados */}
+        <View className="gap-4">
+          <Texto variant="h3">Infraestrutura de Dados</Texto>
+          <Botao 
+            variant="primary" 
+            onPress={testarSupabase}
+            disabled={loadingDb}
+          >
+            {loadingDb ? 'Testando...' : 'Testar conexão Supabase'}
+          </Botao>
         </View>
 
         {/* Cards de Cores */}

@@ -1,30 +1,63 @@
 /**
  * Cliente Supabase configurado para React Native.
- *
- * Por que AsyncStorage como adapter?
- * No React Native não existe `localStorage` (API do browser).
- * O Supabase SDK usa storage para persistir a sessão de autenticação.
- * AsyncStorage é o equivalente assíncrono do localStorage no RN.
- *
- * Por que EXPO_PUBLIC_ no prefixo?
- * O Expo expõe variáveis de ambiente ao bundle do cliente SOMENTE quando
- * têm o prefixo EXPO_PUBLIC_. Sem ele, process.env retorna undefined em runtime.
  */
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { createClient } from '@supabase/supabase-js'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
+import {
+  Exercicio,
+  Referencia,
+  Perfil,
+  Suplemento,
+  Gamificacao,
+  EstadoSilhueta,
+} from '../types';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
+export interface Database {
+  public: {
+    Tables: {
+      exercicios: {
+        Row: Exercicio;
+        Insert: Partial<Exercicio>;
+        Update: Partial<Exercicio>;
+      };
+      referencias_cientificas: {
+        Row: Referencia;
+        Insert: Partial<Referencia>;
+        Update: Partial<Referencia>;
+      };
+      perfil_usuario: {
+        Row: Perfil & { id: string };
+        Insert: Partial<Perfil & { id: string }>;
+        Update: Partial<Perfil & { id: string }>;
+      };
+      estado_silhueta: {
+        Row: EstadoSilhueta;
+        Insert: Partial<EstadoSilhueta>;
+        Update: Partial<EstadoSilhueta>;
+      };
+      gamificacao: {
+        Row: Gamificacao;
+        Insert: Partial<Gamificacao>;
+        Update: Partial<Gamificacao>;
+      };
+      suplementos: {
+        Row: Suplemento;
+        Insert: Partial<Suplemento>;
+        Update: Partial<Suplemento>;
+      };
+      // Outras tabelas do Supabase podem ser adicionadas conforme necessidade.
+    };
+  };
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://url-placeholder.supabase.co';
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'key-placeholder';
+
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // Usa AsyncStorage como storage adapter (obrigatório no React Native)
     storage: AsyncStorage,
-    // Renova o token automaticamente antes de expirar
     autoRefreshToken: true,
-    // Persiste a sessão entre reinicializações do app
     persistSession: true,
-    // Desabilitado: não há URLs para detectar em ambiente mobile
     detectSessionInUrl: false,
   },
-})
+});

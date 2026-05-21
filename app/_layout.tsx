@@ -22,6 +22,8 @@ import 'react-native-reanimated'
 import '../global.css'
 
 import { useColorScheme } from '@/components/useColorScheme'
+import { initializeSchema } from '../db/schema-local'
+import { useSyncEngine } from '../db/sync-engine'
 
 export { ErrorBoundary } from 'expo-router'
 
@@ -47,6 +49,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (error) throw error
+    
+    // Inicializa o banco de dados local em background
+    initializeSchema().catch(console.error);
   }, [error])
 
   useEffect(() => {
@@ -64,6 +69,9 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme()
+  
+  // Inicia o engine de sincronização offline-first
+  useSyncEngine()
 
   return (
     // ThemeProvider aplica o tema claro/escuro do sistema ao Expo Router
