@@ -1,15 +1,56 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // NativeWind v4 requer o preset próprio para gerar CSS compatível com React Native
+  darkMode: 'class',
   presets: [require('nativewind/preset')],
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
     './components/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
-    // Tokens de design serão adicionados na Fase 1
-    // Por enquanto mantemos o tema default do Tailwind
-    extend: {},
+    extend: {
+      colors: {
+        'bg-canvas': 'var(--color-bg-canvas)',
+        'bg-elevated': 'var(--color-bg-elevated)',
+        'bg-overlay': 'var(--color-bg-overlay)',
+        'bg-highlight': 'var(--color-bg-highlight)',
+        'fg-primary': 'var(--color-fg-primary)',
+        'fg-secondary': 'var(--color-fg-secondary)',
+        'fg-muted': 'var(--color-fg-muted)',
+        'fg-inverse': 'var(--color-fg-inverse)',
+        'accent-bronze': 'var(--color-accent-bronze)',
+        'accent-marble': 'var(--color-accent-marble)',
+        'accent-gold': 'var(--color-accent-gold)',
+        'feedback-success': 'var(--color-feedback-success)',
+        'feedback-warning': 'var(--color-feedback-warning)',
+        'feedback-error': 'var(--color-feedback-error)',
+        'border-subtle': 'var(--color-border-subtle)',
+        'border-strong': 'var(--color-border-strong)',
+        divider: 'var(--color-divider)',
+      },
+      spacing: {
+        1: '4px',
+        2: '8px',
+        3: '12px',
+        4: '16px',
+        5: '24px',
+        6: '32px',
+        7: '48px',
+        8: '64px',
+      },
+      borderRadius: {
+        xs: '4px',
+        sm: '10px',
+        md: '18px',
+        lg: '28px',
+        xl: '36px',
+        full: '9999px',
+      },
+      fontFamily: {
+        display: ['Fraunces', 'serif'],
+        body: ['Inter', 'sans-serif'],
+        mono: ['Inter', 'sans-serif'],
+      },
+    },
   },
   plugins: [],
 }
