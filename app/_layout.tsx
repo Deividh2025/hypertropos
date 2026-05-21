@@ -11,10 +11,11 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter'
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router'
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import 'react-native-reanimated'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 // Importação obrigatória do NativeWind v4:
 // O CSS global deve ser importado no layout raiz para que o compilador
@@ -69,9 +70,35 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme()
+  const router = useRouter()
+  const [isReady, setIsReady] = useState(false)
   
   // Inicia o engine de sincronização offline-first
   useSyncEngine()
+
+  useEffect(() => {
+    async function checkOnboarding() {
+      try {
+        const complete = await AsyncStorage.getItem('onboarding_complete')
+        if (complete !== 'true') {
+          // Usa setTimeout leve para garantir que o root layout montou e o router está pronto
+          setTimeout(() => {
+            router.replace('/onboarding')
+          }, 100)
+        }
+      } catch (err) {
+        console.error('Error checking onboarding status', err)
+      } finally {
+        setIsReady(true)
+      }
+    }
+    
+    checkOnboarding()
+  }, [])
+
+  if (!isReady) {
+    return null; // Pode retornar null ou uma view de loading simplificada
+  }
 
   return (
     // ThemeProvider aplica o tema claro/escuro do sistema ao Expo Router
@@ -79,6 +106,7 @@ function RootLayoutNav() {
       <Stack>
         {/* (tabs) é a rota principal — sem header próprio, gerenciado pelo Tabs */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
     </ThemeProvider>

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, ScrollView, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 import { Container } from '../../components/ui/Container';
 import { Texto } from '../../components/ui/Texto';
 import { Card } from '../../components/ui/Card';
@@ -7,107 +9,55 @@ import { Botao } from '../../components/ui/Botao';
 import { useTheme } from '../../hooks/useTheme';
 import { supabase } from '../../db/supabase-client';
 
-export default function HomeSandboxScreen() {
+export default function HomePlaceholderScreen() {
   const { toggleTheme } = useTheme();
-  const [loadingDb, setLoadingDb] = useState(false);
+  const router = useRouter();
 
   const testarSupabase = async () => {
-    setLoadingDb(true);
     try {
       const { error, count } = await supabase
-        .from('exercicios')
+        .from('perfil_usuario')
         .select('*', { count: 'exact', head: true });
 
       if (error) {
-        Alert.alert('Erro Supabase', error.message);
+        Alert.alert('Erro', error.message);
       } else {
-        Alert.alert('Sucesso', `Conexão bem-sucedida! Exercícios na base: ${count}`);
+        Alert.alert('Sucesso', `Perfis na base remota: ${count}`);
       }
     } catch (err: any) {
-      Alert.alert('Erro Inesperado', err.message);
-    } finally {
-      setLoadingDb(false);
+      Alert.alert('Erro', err.message);
     }
+  };
+
+  const limparOnboarding = async () => {
+    await AsyncStorage.removeItem('onboarding_complete');
+    router.replace('/onboarding');
   };
 
   return (
     <Container>
-      <ScrollView contentContainerClassName="p-6 gap-6">
-        <View className="gap-2">
-          <Texto variant="displayL">Hypertropos</Texto>
-          <Texto variant="bodyL" color="secondary">
-            Sistema de Design Tokens e Dados em funcionamento.
+      <ScrollView contentContainerClassName="p-6 gap-6 items-center flex-1 justify-center">
+        <View className="items-center mb-8">
+          <Texto variant="h1" className="text-center mb-2">Perfil Salvo.</Texto>
+          <Texto variant="bodyL" color="secondary" className="text-center">
+            Sua rotina personalizada será gerada na Fase 4.
           </Texto>
         </View>
 
-        {/* Teste de Dados */}
-        <View className="gap-4">
-          <Texto variant="h3">Infraestrutura de Dados</Texto>
-          <Botao 
-            variant="primary" 
-            onPress={testarSupabase}
-            disabled={loadingDb}
-          >
-            {loadingDb ? 'Testando...' : 'Testar conexão Supabase'}
+        <Card className="w-full mb-4">
+          <Texto variant="h3" className="mb-4">Ferramentas de Teste (Fase 3)</Texto>
+          
+          <Botao variant="secondary" onPress={testarSupabase} className="mb-4">
+            Verificar Supabase
           </Botao>
-        </View>
+          
+          <Botao variant="destructive" onPress={limparOnboarding}>
+            Resetar Onboarding
+          </Botao>
+        </Card>
 
-        {/* Cards de Cores */}
-        <View className="flex-row gap-4">
-          <Card padding="none" className="flex-1 overflow-hidden">
-            <View className="bg-accent-bronze p-4 items-center justify-center">
-              <Texto variant="captionBold" color="inverse">Bronze</Texto>
-            </View>
-          </Card>
-          <Card padding="none" className="flex-1 overflow-hidden">
-            <View className="bg-accent-marble p-4 items-center justify-center">
-              <Texto variant="captionBold" color="inverse">Marble</Texto>
-            </View>
-          </Card>
-          <Card padding="none" className="flex-1 overflow-hidden">
-            <View className="bg-accent-gold p-4 items-center justify-center">
-              <Texto variant="captionBold" color="inverse">Gold</Texto>
-            </View>
-          </Card>
-        </View>
-
-        {/* Botões */}
-        <View className="gap-4">
-          <Texto variant="h3">Botões</Texto>
-          <Botao variant="primary" onPress={() => console.log('Botão Primary clicado')}>
-            Primary Action
-          </Botao>
-          <Botao variant="secondary" onPress={() => console.log('Botão Secondary clicado')}>
-            Secondary Action
-          </Botao>
-          <Botao variant="ghost" onPress={() => console.log('Botão Ghost clicado')}>
-            Ghost Action
-          </Botao>
-          <Botao variant="destructive" onPress={() => console.log('Botão Destructive clicado')}>
-            Destructive Action
-          </Botao>
-        </View>
-
-        {/* Tipografia */}
-        <View className="gap-4">
-          <Texto variant="h3">Tipografia</Texto>
-          <Texto variant="displayXL">Display XL</Texto>
-          <Texto variant="displayL">Display L</Texto>
-          <Texto variant="h1">Heading 1</Texto>
-          <Texto variant="h2">Heading 2</Texto>
-          <Texto variant="h3">Heading 3</Texto>
-          <Texto variant="bodyL">Body Large</Texto>
-          <Texto variant="body">Body Normal</Texto>
-          <Texto variant="bodyBold">Body Bold</Texto>
-          <Texto variant="caption">Caption</Texto>
-          <Texto variant="captionBold">Caption Bold</Texto>
-          <Texto variant="numericHero">00:45</Texto>
-          <Texto variant="numericM">12</Texto>
-        </View>
-
-        {/* Alternar Tema */}
-        <View className="pt-6 pb-12">
-          <Botao variant="secondary" onPress={toggleTheme}>
+        <View className="mt-8">
+          <Botao variant="ghost" onPress={toggleTheme}>
             Alternar Tema
           </Botao>
         </View>
