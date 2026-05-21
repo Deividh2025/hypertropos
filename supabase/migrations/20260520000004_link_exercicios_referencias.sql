@@ -1,0 +1,1 @@
+-- Migration 20260520000004_link_exercicios_referencias.sql\n-- Exercicio_referencias\n\nINSERT INTO exercicio_referencias (exercicio_id, referencia_id) VALUES ('push_wall', 'schoenfeld_placeholder') ON CONFLICT (exercicio_id, referencia_id) DO NOTHING;
