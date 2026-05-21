@@ -1,0 +1,11 @@
+/* Arquivo CSS global — importado no _layout.tsx raiz do Expo Router
+ *
+ * Por que este arquivo é necessário?
+ * O NativeWind v4 usa um compilador CSS que processa as classes Tailwind
+ * em tempo de build. Este arquivo é o ponto de entrada desse compilador.
+ * O Metro bundler (via withNativeWind) lê este arquivo e gera os estilos
+ * correspondentes para cada plataforma.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

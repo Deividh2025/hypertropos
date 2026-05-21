@@ -1,0 +1,27 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    // Modo estrito: habilita noImplicitAny, strictNullChecks, strictFunctionTypes, etc.
+    "strict": true,
+    // Necessário para os path aliases funcionarem no type checker
+    "baseUrl": ".",
+    // TypeScript 6.0 deprecou baseUrl em favor de importAttributes — silenciamos durante transição
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "@/components/*": ["components/*"],
+      "@/lib/*": ["lib/*"],
+      "@/db/*": ["db/*"],
+      "@/hooks/*": ["hooks/*"],
+      "@/stores/*": ["stores/*"],
+      "@/types/*": ["types/*"],
+      "@/constants/*": ["constants/*"],
+      "@/assets/*": ["assets/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
+}
