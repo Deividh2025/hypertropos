@@ -8,6 +8,10 @@ export interface ExercicioPrescrito {
   rir_alvo: number;
   descanso_segundos: number;
   substituicao_de_id?: string | null;
+  // Extensões para o algoritmo científico de hipertrofia
+  substituido_por_restricao?: boolean;
+  exercicio_ideal_id?: string | null;
+  notas?: string;
 }
 
 export interface SessaoTemplate {
@@ -16,6 +20,9 @@ export interface SessaoTemplate {
   descricao?: string;
   ordem_na_semana: number;
   exercicios_prescritos: ExercicioPrescrito[];
+  // Extensões do algoritmo
+  dia_da_semana?: string;
+  exercicios?: ExercicioPrescrito[];
 }
 
 export interface ProgramaAtivo {
@@ -25,6 +32,10 @@ export interface ProgramaAtivo {
   sessoes: SessaoTemplate[];
   data_inicio: string;
   data_fim?: string;
+  // Extensões de compatibilidade com a especificação do algoritmo
+  split?: string;
+  sessoes_template?: SessaoTemplate[];
+  semana_atual?: number;
 }
 
 export interface SerieExecutada {
