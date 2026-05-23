@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import Animated, { FadeIn, SlideInDown } from 'react-native-reanimated';
+import { View, StyleSheet, Dimensions, Pressable } from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInDown } from 'react-native-reanimated';
 import { Texto } from '../ui/Texto';
 import { Botao } from '../ui/Botao';
 import { Card } from '../ui/Card';
 import { useTheme } from '../../hooks/useTheme';
 import { useSessaoStore } from '../../stores/sessaoStore';
+import { useGamificacaoStore } from '../../stores/gamificacaoStore';
 import { FRASES_FINAL_SESSAO } from '../../constants/microcopy';
 import { useMicrocopy } from '../feedback/MicrocopyVariavel';
 import { ParticulasCinzel } from '../feedback/ParticulasCinzel';
-import { Trophy, Barbell, Clock, CalendarDays, Flame, Lightning } from 'phosphor-react-native';
+import { CelebracaoConquista } from '../feedback/CelebracaoConquista';
+import { TransicaoTier } from '../feedback/TransicaoTier';
+import { Trophy, Barbell, Clock, Flame, Lightning, Star, Sparkles } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { SCULPTED_EASING } from '../../constants/easing';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -29,13 +33,25 @@ export function CelebracaoFinalSessao() {
     cancelarSessao
   } = useSessaoStore();
 
+  const {
+    celebracaoAtiva,
+    filaCelebracoes,
+    finalizarTreinoDopaminergico,
+    desempilharCelebracao
+  } = useGamificacaoStore();
+
   const [frase, setFrase] = useState('');
   const [celebTrigger, setCelebTrigger] = useState(0);
+  const [xpContador, setXpContador] = useState(0);
+  const [hasProcessed, setHasProcessed] = useState(false);
 
   const obterFraseCeleb = useMicrocopy(FRASES_FINAL_SESSAO);
+  const totalXPGanho = modoExpress ? 40 : 100; // XP estimado base para contagem imediata
 
+  // 1. Processar o treino no motor dopaminérgico assim que finalizado
   useEffect(() => {
-    if (statusSessao === 'finalizada') {
+    if (statusSessao === 'finalizada' && !hasProcessed) {
+      setHasProcessed(true);
       setFrase(obterFraseCeleb());
       
       // Gatilho inicial da animação lenta de fagulhas douradas (~800ms)
@@ -47,9 +63,45 @@ export function CelebracaoFinalSessao() {
       // Vibração de notificação de sucesso
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+      // Mapeamento e disparo da gamificação reativa pos-sessão
+      const seriesMapeadas = historicoSeries.map(s => {
+        const prescrito = exerciciosPrescritos.find(ep => ep.exercicio_id === s.exercicioId);
+        return {
+          exercicio_id: s.exercicioId,
+          reps_executadas: s.reps,
+          rir_realizado: s.rir,
+          rir_alvo: prescrito?.rir_alvo || 2
+        };
+      });
+
+      // Dispara o orquestrador do motor de gamificação
+      finalizarTreinoDopaminergico(Date.now().toString(), modoExpress, seriesMapeadas);
+
       return () => clearTimeout(timerParticulas);
     }
-  }, [statusSessao, obterFraseCeleb]);
+  }, [statusSessao, hasProcessed, obterFraseCeleb]);
+
+  // 2. Animação de contagem de XP de 3 segundos
+  useEffect(() => {
+    if (statusSessao === 'finalizada') {
+      let start = 0;
+      const end = totalXPGanho;
+      const duration = 3000; // 3 segundos
+      const stepTime = Math.max(Math.floor(duration / end), 25);
+      
+      const timer = setInterval(() => {
+        start += Math.ceil(end / (duration / stepTime));
+        if (start >= end) {
+          setXpContador(end);
+          clearInterval(timer);
+        } else {
+          setXpContador(start);
+        }
+      }, stepTime);
+
+      return () => clearInterval(timer);
+    }
+  }, [statusSessao]);
 
   if (statusSessao !== 'finalizada') return null;
 
@@ -176,7 +228,7 @@ export function CelebracaoFinalSessao() {
           </Card>
         </Animated.View>
 
-        {/* Card Gamificação (Fase 6 Placeholders Reais integrados na store) */}
+        {/* Card Gamificação - XP Progressivo Animado */}
         <Animated.View entering={SlideInDown.delay(350).duration(500).easing(SCULPTED_EASING)}>
           <Card padding="md" className="border border-border-subtle rounded-md bg-elevated flex-row items-center gap-4 shadow-md">
             <View className="w-12 h-12 rounded-full bg-feedback-success/15 justify-center items-center">
@@ -184,7 +236,7 @@ export function CelebracaoFinalSessao() {
             </View>
             <View className="flex-1 gap-0.5">
               <Texto variant="bodyBold" color="success">
-                {modoExpress ? '+40 XP Obtidos' : '+100 XP Obtidos'}
+                +{xpContador} XP Obtidos
               </Texto>
               <Texto variant="caption" color="muted">
                 {modoExpress 
@@ -203,13 +255,71 @@ export function CelebracaoFinalSessao() {
           <Botao
             variant="primary"
             size="lg"
-            onPress={handleConcluido}
+            onPress={celebracaoAtiva ? desempilharCelebracao : handleConcluido}
             className="w-full flex-row gap-2"
           >
-            <Texto variant="bodyBold" color="inverse">Concluído</Texto>
+            <Texto variant="bodyBold" color="inverse">
+              {celebracaoAtiva ? 'Avançar Celebração' : 'Concluir'}
+            </Texto>
           </Botao>
         </Animated.View>
       </View>
+
+      {/* OVERLAYS SEQUENCIAIS DE CELEBRAÇÃO (Só mostram um por vez) */}
+      {celebracaoAtiva && (
+        <View style={StyleSheet.absoluteFill} className="justify-center items-center">
+          
+          {/* A. Novo Nível */}
+          {celebracaoAtiva.type === 'nivel' && (
+            <Animated.View
+              entering={FadeIn.duration(400)}
+              exiting={FadeOut.duration(300)}
+              style={[StyleSheet.absoluteFill, styles.localOverlay]}
+              className="justify-center items-center px-6"
+            >
+              <Card className="w-full max-w-[320px] rounded-[28px] p-8 items-center shadow-overlay bg-bg-elevated border border-border-strong">
+                <View className="w-16 h-16 rounded-full bg-feedback-success/15 justify-center items-center mb-6">
+                  <Star size={36} color={tokens.feedback.success} weight="fill" />
+                </View>
+                <Texto variant="h1" className="text-center font-bold mb-2 tracking-tight">
+                  Evolução Nível {celebracaoAtiva.nivel}!
+                </Texto>
+                <Texto variant="body" color="secondary" className="text-center mb-8 px-4">
+                  Sua capacidade adaptativa aumentou. Novos limites biológicos alcançados!
+                </Texto>
+                <Botao variant="primary" size="lg" onPress={desempilharCelebracao} className="w-full">
+                  Excelente
+                </Botao>
+              </Card>
+            </Animated.View>
+          )}
+
+          {/* B. Conquista Desbloqueada */}
+          {celebracaoAtiva.type === 'conquista' && (
+            <CelebracaoConquista
+              conquista={celebracaoAtiva.conquista}
+              aoFechar={desempilharCelebracao}
+            />
+          )}
+
+          {/* C. Transição de Tier */}
+          {celebracaoAtiva.type === 'tier' && (
+            <TransicaoTier
+              tierAntigo={celebracaoAtiva.tierAntigo}
+              tierNovo={celebracaoAtiva.tierNovo as any}
+              aoFechar={desempilharCelebracao}
+            />
+          )}
+
+        </View>
+      )}
     </Animated.View>
   );
 }
+
+const styles = StyleSheet.create({
+  localOverlay: {
+    backgroundColor: 'rgba(26, 23, 21, 0.85)',
+    zIndex: 10500,
+  },
+});
