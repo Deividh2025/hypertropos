@@ -6,6 +6,7 @@ import { adicionarXP, incrementarStreak } from '../db/queries/gamificacao';
 import { enqueueChange } from '../db/sync-engine';
 import { executarQuery, obterLinha } from '../db/local-cache';
 import * as Haptics from 'expo-haptics';
+import { motorAudio } from '../lib/motor-audio';
 
 function generateUUID() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -131,8 +132,8 @@ export const useSessaoStore = create<SessaoState>((set, get) => ({
       // Inicia contagem de descanso
       set({
         statusSessao: 'descansando',
-        tempoDescansoRestante: currentPrescricao.descanso_segundos || currentPrescricao.descanso_seg || 90,
-        tempoDescansoTotal: currentPrescricao.descanso_segundos || currentPrescricao.descanso_seg || 90,
+        tempoDescansoRestante: currentPrescricao.descanso_segundos || 90,
+        tempoDescansoTotal: currentPrescricao.descanso_segundos || 90,
       });
     } else {
       // Finalizou o exercício inteiro!
@@ -143,11 +144,13 @@ export const useSessaoStore = create<SessaoState>((set, get) => ({
           statusSessao: 'transicao_exercicio',
           tempoDescansoRestante: 0,
         });
+        motorAudio.tocarSom('conclusao-exercicio');
       } else {
         // Finalizou o treino inteiro!
         set({
           statusSessao: 'finalizada'
         });
+        motorAudio.tocarSom('conclusao-sessao');
         // Dispara o haptic de conclusão da sessão inteira
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         // Persiste tudo no banco offline-first
@@ -190,6 +193,7 @@ export const useSessaoStore = create<SessaoState>((set, get) => ({
   },
 
   cancelarSessao: () => {
+    motorAudio.tocarSom('cancelamento');
     set({
       sessaoTemplate: null,
       exerciciosPrescritos: [],
@@ -222,6 +226,7 @@ export const useSessaoStore = create<SessaoState>((set, get) => ({
         
         // Feedbacks multissensoriais
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        motorAudio.tocarSom('fim-descanso');
         console.log('play sound: ding - descanso concluído');
       } else {
         set({ tempoDescansoRestante: proximoTempo });

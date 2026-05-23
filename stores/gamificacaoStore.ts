@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Conquista, EstadoSilhueta, Gamificacao } from '../types/gamificacao';
 import { processarPosSessao, obterConquistasUsuario } from '../lib/motor-gamificacao';
 import { obterEstado } from '../db/queries/gamificacao';
-import { executarQuery, obterLinha } from '../db/local-cache';
+import { executarQuery, obterLinha, obterLinhas } from '../db/local-cache';
 import { enqueueChange } from '../db/sync-engine';
 import * as Haptics from 'expo-haptics';
 

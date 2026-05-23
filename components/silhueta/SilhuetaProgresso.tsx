@@ -111,7 +111,7 @@ export default function SilhuetaProgresso({ onRegiaoTocada }: SilhuetaProgressoP
           >
             <Texto 
               variant="caption" 
-              style={[styles.toggleBtnText, frente ? styles.toggleBtnTextActive : { color: tokens.text.muted }]}
+              style={[styles.toggleBtnText, frente ? styles.toggleBtnTextActive : { color: tokens.fg.muted }]}
             >
               Frente
             </Texto>
@@ -122,7 +122,7 @@ export default function SilhuetaProgresso({ onRegiaoTocada }: SilhuetaProgressoP
           >
             <Texto 
               variant="caption" 
-              style={[styles.toggleBtnText, !frente ? styles.toggleBtnTextActive : { color: tokens.text.muted }]}
+              style={[styles.toggleBtnText, !frente ? styles.toggleBtnTextActive : { color: tokens.fg.muted }]}
             >
               Costas
             </Texto>
@@ -154,7 +154,7 @@ export default function SilhuetaProgresso({ onRegiaoTocada }: SilhuetaProgressoP
           </Texto>
 
           <View style={styles.scientificTip}>
-            <Info size={14} color={tokens.text.muted} style={styles.tipIcon} />
+            <Info size={14} color={tokens.fg.muted} style={styles.tipIcon} />
             <Texto variant="caption" color="muted" style={styles.tipText}>
               Janela biológica de 28 dias com decaimento exponencial após 14 dias sem treino mecânico.
             </Texto>

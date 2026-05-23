@@ -12,7 +12,7 @@ import { useMicrocopy } from '../feedback/MicrocopyVariavel';
 import { ParticulasCinzel } from '../feedback/ParticulasCinzel';
 import { CelebracaoConquista } from '../feedback/CelebracaoConquista';
 import { TransicaoTier } from '../feedback/TransicaoTier';
-import { Trophy, Barbell, Clock, Flame, Lightning, Star, Sparkles } from 'phosphor-react-native';
+import { Trophy, Barbell, Clock, Flame, Lightning, Star } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { SCULPTED_EASING } from '../../constants/easing';

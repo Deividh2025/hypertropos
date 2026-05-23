@@ -1,12 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDb } from './local-cache';
 import { migration001 } from './migrations/local/001_initial_schema';
+import { migration002 } from './migrations/local/002_nutrition_notifications';
+import { migration003 } from './migrations/local/003_secao_cientifica';
 
-export const LOCAL_SCHEMA_VERSION = 1;
+export const LOCAL_SCHEMA_VERSION = 3;
 const SCHEMA_VERSION_KEY = 'local_schema_version';
 
 const migrations = [
   { version: 1, up: migration001 },
+  { version: 2, up: migration002 },
+  { version: 3, up: migration003 },
 ];
 
 export async function initializeSchema() {

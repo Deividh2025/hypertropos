@@ -6,7 +6,7 @@ import { Texto } from '../../components/ui/Texto';
 import { Card } from '../../components/ui/Card';
 import { useTheme } from '../../hooks/useTheme';
 import { useProgramaStore } from '../../stores/programaStore';
-import { ArrowLeft, Calendar, Check, Circle, Clock } from 'phosphor-react-native';
+import { ArrowLeft, Calendar, Check, Clock } from 'phosphor-react-native';
 
 const DIAS_SEMANA_MAP: Record<string, number> = {
   'domingo': 0,
@@ -82,7 +82,7 @@ export default function SemanaScreen() {
         <Pressable 
           onPress={() => router.back()} 
           className="p-2 -ml-2"
-          style={{ hitSlop: { top: 15, bottom: 15, left: 15, right: 15 } }}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
           <ArrowLeft size={20} color={tokens.fg.primary} />
         </Pressable>
@@ -119,8 +119,8 @@ export default function SemanaScreen() {
           } else if (status === 'hoje') {
             cardBorderClass = 'border-accent-bronze/40 bg-elevated';
             statusBadge = (
-              <View className="flex-row items-center gap-1 bg-accent-bronze/10 py-1 px-2 rounded-xs border border-accent-bronze/20">
-                <Circle size={8} color={tokens.accent.bronze} weight="fill" />
+              <View className="flex-row items-center gap-1.5 bg-accent-bronze/10 py-1 px-2 rounded-xs border border-accent-bronze/20">
+                <View className="w-2 h-2 rounded-full" style={{ backgroundColor: tokens.accent.bronze }} />
                 <Texto variant="caption" color="bronze" className="text-[11px] font-semibold">Hoje</Texto>
               </View>
             );

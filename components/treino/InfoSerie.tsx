@@ -22,9 +22,9 @@ export function InfoSerie() {
   const rirAlvo = currentPrescricao.rir_alvo ?? 2;
 
   // Cadência recomendada obtida do banco local
-  const excentrica = exercicioDetalhes?.cadencia_excentrica ?? 3;
-  const isometrica = exercicioDetalhes?.cadencia_isometrica ?? 0;
-  const concentrica = exercicioDetalhes?.cadencia_concentrica ?? 1;
+  const excentrica = exercicioDetalhes?.cadencia_recomendada?.excentrica ?? 3;
+  const isometrica = exercicioDetalhes?.cadencia_recomendada?.isometrica ?? 0;
+  const concentrica = exercicioDetalhes?.cadencia_recomendada?.concentrica ?? 1;
 
   const cadenciaTexto = isometrica > 0 
     ? `Excêntrica ${excentrica}s · Isométrica ${isometrica}s · Concêntrica ${concentrica}s`
@@ -91,7 +91,9 @@ export function InfoSerie() {
         {/* Nota técnica ou observação se houver */}
         {currentPrescricao.notas && (
           <View className="mt-3 flex-row gap-2 bg-canvas/60 border border-border-subtle/40 p-3 rounded-sm items-start">
-            <Info size={16} color={tokens.fg.muted} className="mt-0.5" />
+            <View className="mt-0.5">
+              <Info size={16} color={tokens.fg.muted} />
+            </View>
             <Texto variant="caption" color="muted" className="flex-1 italic leading-[18px]">
               {currentPrescricao.notas}
             </Texto>

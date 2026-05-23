@@ -74,30 +74,33 @@ export async function obterProgramaAtivo(): Promise<ProgramaAtivo | null> {
     // 2. Consulta de sincronização em background assíncrona (não bloqueia o retorno)
     // Na arquitetura real offline-first, o sync engine cuida disso, mas
     // esta query garante que atualizações do servidor sejam refletidas localmente
-    supabase.from('programa_ativo')
-      .select(`
-        id, nome, split, data_inicio, data_fim, ativo,
-        sessoes:sessoes_template(
-          id, nome, ordem, dia_referencia,
-          exercicios:exercicios_prescritos(
-            id, exercicio_id, ordem, series_alvo, reps_alvo, rir_alvo, descanso_seg, notas
-          )
-        )
-      `)
-      .eq('ativo', true)
-      .single()
-      .then(async ({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase.from('programa_ativo')
+          .select(`
+            id, nome, split, data_inicio, data_fim, ativo,
+            sessoes:sessoes_template(
+              id, nome, ordem, dia_referencia,
+              exercicios:exercicios_prescritos(
+                id, exercicio_id, ordem, series_alvo, reps_alvo, rir_alvo, descanso_seg, notas
+              )
+            )
+          `)
+          .eq('ativo', true)
+          .single();
+
         if (!error && data) {
+          const resData = data as any;
           // Converte o retorno relacional do Supabase para as interfaces amigáveis do typescript
           const programaFormatado: ProgramaAtivo = {
-            id: data.id,
-            nome: data.nome,
-            split_tipo: data.split,
-            split: data.split,
-            data_inicio: data.data_inicio,
-            data_fim: data.data_fim,
+            id: resData.id,
+            nome: resData.nome,
+            split_tipo: resData.split,
+            split: resData.split,
+            data_inicio: resData.data_inicio,
+            data_fim: resData.data_fim,
             semana_atual: 1,
-            sessoes: (data.sessoes || []).map((s: any) => {
+            sessoes: (resData.sessoes || []).map((s: any) => {
               const exerciciosPrescritos = (s.exercicios || []).map((e: any) => {
                 const parts = (e.reps_alvo || '8-12').split('-');
                 return {
@@ -127,8 +130,10 @@ export async function obterProgramaAtivo(): Promise<ProgramaAtivo | null> {
           
           await AsyncStorage.setItem(ACTIVE_PROGRAM_KEY, JSON.stringify(programaFormatado));
         }
-      })
-      .catch(err => console.error('Falha ao sincronizar programa ativo com Supabase:', err));
+      } catch (err) {
+        console.error('Falha ao sincronizar programa ativo com Supabase:', err);
+      }
+    })();
 
     return cached;
   } catch (error) {

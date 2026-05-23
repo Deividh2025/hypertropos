@@ -22,11 +22,11 @@ module.exports = function (api) {
           jsxImportSource: 'nativewind',
         },
       ],
+      'nativewind/babel',
     ],
     plugins: [
-      // Plugin do NativeWind para processar className nas diretivas JSX
-      'nativewind/babel',
       [
+
         // Resolve os path aliases (@/components, @/lib, etc.) em runtime
         'module-resolver',
         {

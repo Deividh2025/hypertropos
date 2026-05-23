@@ -16,7 +16,7 @@ import { Container } from '../../components/ui/Container';
 import { Texto } from '../../components/ui/Texto';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import { salvarPerfil } from '../../db/queries/perfil';
-import { FaseNutricional, Perfil } from '../../types/exercicio';
+import { FaseNutricional, Perfil } from '../../types';
 import { mapearRegiaoParaArticulacao, mapearSeveridadeParaNivel } from '../../types/onboarding';
 
 const FRASES = [

@@ -1,4 +1,5 @@
-import { Articulacao, NivelEstresse, Genero, Nivel, NivelAtividade, HorarioTreino, Equipamento } from './exercicio';
+import { Articulacao, NivelEstresse, Equipamento } from './exercicio';
+import { Genero, Nivel, NivelAtividade, HorarioTreino } from './perfil';
 
 export enum RegiaoCorpo {
   JOELHO_ESQUERDO = 'joelho_esquerdo',

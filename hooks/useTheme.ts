@@ -5,7 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../constants/tokens';
 
 export function useTheme() {
-  const systemTheme = useNativeColorScheme() ?? 'dark';
+  const systemColorScheme = useNativeColorScheme();
+  const systemTheme: 'light' | 'dark' = systemColorScheme === 'light' ? 'light' : 'dark';
   const { colorScheme, setColorScheme } = useNativeWindColorScheme();
   const [theme, setThemeState] = useState<'light' | 'dark'>(systemTheme);
 

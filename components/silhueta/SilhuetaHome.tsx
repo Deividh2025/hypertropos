@@ -92,7 +92,7 @@ export default function SilhuetaHome() {
         >
           <Texto 
             variant="caption" 
-            style={[styles.toggleBtnText, frente ? styles.toggleBtnTextActive : { color: tokens.text.muted }]}
+            style={[styles.toggleBtnText, frente ? styles.toggleBtnTextActive : { color: tokens.fg.muted }]}
           >
             Frente
           </Texto>
@@ -103,7 +103,7 @@ export default function SilhuetaHome() {
         >
           <Texto 
             variant="caption" 
-            style={[styles.toggleBtnText, !frente ? styles.toggleBtnTextActive : { color: tokens.text.muted }]}
+            style={[styles.toggleBtnText, !frente ? styles.toggleBtnTextActive : { color: tokens.fg.muted }]}
           >
             Costas
           </Texto>

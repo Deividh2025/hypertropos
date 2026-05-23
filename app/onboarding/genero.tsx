@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { OnboardingScreen } from '../../components/onboarding/OnboardingScreen';
 import { SelectableCard } from '../../components/onboarding/SelectableCard';
 import { useOnboardingStore } from '../../stores/onboardingStore';
-import { Genero } from '../../types/exercicio';
+import { Genero } from '../../types';
 
 export default function GeneroScreen() {
   const router = useRouter();

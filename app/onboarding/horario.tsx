@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { OnboardingScreen } from '../../components/onboarding/OnboardingScreen';
 import { SelectableCard } from '../../components/onboarding/SelectableCard';
 import { useOnboardingStore } from '../../stores/onboardingStore';
-import { HorarioTreino } from '../../types/exercicio';
+import { HorarioTreino } from '../../types';
 import { Texto } from '../../components/ui/Texto';
 
 export default function HorarioScreen() {

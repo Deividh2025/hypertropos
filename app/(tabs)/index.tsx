@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ScrollView, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { View, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, {
   useSharedValue,
@@ -17,9 +17,12 @@ import { Botao } from '../../components/ui/Botao';
 import { useTheme } from '../../hooks/useTheme';
 import { useProgramaStore } from '../../stores/programaStore';
 import { useGamificacaoStore } from '../../stores/gamificacaoStore';
-import { Flame, CalendarBlank, Check, Moon, Sun, ArrowRight, Trophy, Shield } from 'phosphor-react-native';
+import { Flame, CalendarBlank, Check, Moon, Sun, ArrowRight, Trophy, Shield, Gear } from 'phosphor-react-native';
+import * as Haptics from 'expo-haptics';
 import SilhuetaHome from '../../components/silhueta/SilhuetaHome';
 import { SCULPTED_EASING } from '../../constants/easing';
+import { SkeletonHome } from '../../components/ui/Skeletons';
+
 
 const AnimatedFlame = Animated.createAnimatedComponent(Flame);
 
@@ -132,15 +135,9 @@ export default function HomeScreen() {
   const carregando = carregandoPrograma || carregandoGamificacao;
 
   if (carregando) {
-    return (
-      <Container className="justify-center items-center">
-        <ActivityIndicator size="large" color={tokens.accent.bronze} />
-        <Texto variant="body" color="secondary" className="mt-4">
-          Orquestrando sua rotina científica...
-        </Texto>
-      </Container>
-    );
+    return <SkeletonHome />;
   }
+
 
   if (erroPrograma) {
     return (
@@ -173,17 +170,30 @@ export default function HomeScreen() {
               Tensão mecânica · Hipertrofia em casa
             </Texto>
           </View>
-          <Pressable 
-            onPress={toggleTheme}
-            className="p-2 bg-elevated rounded-full border border-border-subtle"
-            style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}
-          >
-            {theme === 'dark' ? (
-              <Sun size={20} color={tokens.accent.bronze} weight="light" />
-            ) : (
-              <Moon size={20} color={tokens.accent.bronze} weight="light" />
-            )}
-          </Pressable>
+          <View className="flex-row gap-2">
+            <Pressable 
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/configuracoes' as any);
+              }}
+              className="p-2 bg-elevated rounded-full border border-border-subtle"
+              style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}
+              accessibilityLabel="Configurações"
+            >
+              <Gear size={20} color={tokens.accent.bronze} weight="light" />
+            </Pressable>
+            <Pressable 
+              onPress={toggleTheme}
+              className="p-2 bg-elevated rounded-full border border-border-subtle"
+              style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}
+            >
+              {theme === 'dark' ? (
+                <Sun size={20} color={tokens.accent.bronze} weight="light" />
+              ) : (
+                <Moon size={20} color={tokens.accent.bronze} weight="light" />
+              )}
+            </Pressable>
+          </View>
         </View>
 
         {/* 1. SILHUETA CORPORAL VETORIAL SKIA DYNAMIC EVOLUTION */}
@@ -324,10 +334,10 @@ export default function HomeScreen() {
         <Animated.View 
           entering={FadeIn.duration(300)}
           exiting={FadeOut.duration(300)}
-          style={[StyleSheet.absoluteFillObject, styles.modalContainer]}
+          style={[StyleSheet.absoluteFill, styles.modalContainer]}
           className="justify-center items-center px-6"
         >
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={ignorarFreeze} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={ignorarFreeze} />
           
           <Animated.View
             entering={FadeIn.duration(400).delay(100)}

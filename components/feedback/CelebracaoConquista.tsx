@@ -16,6 +16,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { Texto } from '../ui/Texto';
 import { Botao } from '../ui/Botao';
 import { SCULPTED_EASING } from '../../constants/easing';
+import { useSound } from '../../hooks/useSound';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -26,6 +27,7 @@ interface CelebracaoConquistaProps {
 
 export function CelebracaoConquista({ conquista, aoFechar }: CelebracaoConquistaProps) {
   const { tokens } = useTheme();
+  const { tocarSom } = useSound();
 
   // Shared values para a entrada do card
   const scale = useSharedValue(0.8);
@@ -58,9 +60,9 @@ export function CelebracaoConquista({ conquista, aoFechar }: CelebracaoConquista
       true
     );
 
-    // 3. Dispara Haptics e Som (placeholder)
+    // 3. Dispara Haptics e Som
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    console.log(`[SOM] conquista: ${conquista.titulo} desbloqueada`);
+    tocarSom('conquista');
   }, [conquista]);
 
   // Estilo animado do Card central
@@ -82,10 +84,10 @@ export function CelebracaoConquista({ conquista, aoFechar }: CelebracaoConquista
     <Animated.View
       entering={FadeIn.duration(300)}
       exiting={FadeOut.duration(300)}
-      style={[StyleSheet.absoluteFillObject, styles.overlay]}
+      style={[StyleSheet.absoluteFill, styles.overlay]}
       className="justify-center items-center px-6"
     >
-      <Pressable style={StyleSheet.absoluteFillObject} onPress={aoFechar} />
+      <Pressable style={StyleSheet.absoluteFill} onPress={aoFechar} />
 
       <Animated.View
         style={[

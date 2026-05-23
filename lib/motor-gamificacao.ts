@@ -28,7 +28,7 @@ export async function processarPosSessao(
   seriesExecutadas: { exercicio_id: string; reps_executadas: number; rir_realizado: number; rir_alvo: number }[]
 ): Promise<ResultadoPosSessao> {
   // 1. Obter estado atual do Perfil e Gamificação do banco local SQLite
-  const perfil = await obterPerfil() || { id: perfilId, split_atual: 'full_body' } as Perfil;
+  const perfil = await obterPerfil() || ({ id: perfilId, split_atual: 'full_body' } as unknown as Perfil);
   
   // Obter ou inicializar gamificação
   let estadoGamificacao = await obterEstado();

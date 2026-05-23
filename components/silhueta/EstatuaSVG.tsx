@@ -14,7 +14,8 @@ import Animated, {
   useSharedValue, 
   withTiming, 
   useDerivedValue, 
-  interpolateColor 
+  interpolateColor,
+  SharedValue
 } from 'react-native-reanimated';
 import { EstadoSilhueta } from '../../types/gamificacao';
 import { 
@@ -76,12 +77,14 @@ function MusculoPath({
   regiao,
   definicao,
   tierIndexAnim,
+  tier_atual,
   frente,
   scale
 }: {
   regiao: PathMuscular;
   definicao: number;
-  tierIndexAnim: Animated.SharedValue<number>;
+  tierIndexAnim: SharedValue<number>;
+  tier_atual: string;
   frente: boolean;
   scale: number;
 }) {
@@ -172,6 +175,14 @@ function MusculoPath({
     return 0.8 + (definicaoAnim.value / 100) * 0.4;
   });
 
+  const coresGradiente = useDerivedValue(() => {
+    return [corSombra.value, corMeioTom.value, corHighlight.value];
+  });
+
+  const coresRadial = useDerivedValue(() => {
+    return [corHighlight.value, corMeioTom.value, corSombra.value];
+  });
+
   // Mapeia coordenadas dos vetores de gradiente baseados nas dimensões da região
   const p1 = vec(regiao.centro.x - 20, regiao.centro.y - 20);
   const p2 = vec(regiao.centro.x + 20, regiao.centro.y + 20);
@@ -183,24 +194,21 @@ function MusculoPath({
         style="fill"
       >
         {/* Usamos gradiente radial para Mármore e linear para os demais, provendo a melhor iluminação */}
-        {useDerivedValue(() => {
-          const isRadial = tierIndexAnim.value >= 1.9 && tierIndexAnim.value <= 2.1; // Se mármore (index 2)
-          return isRadial ? (
-            <RadialGradient 
-              c={vec(regiao.centro.x, regiao.centro.y)}
-              r={35}
-              colors={[corHighlight.value, corMeioTom.value, corSombra.value]}
-              stops={[0.0, 0.6, 1.0]}
-            />
-          ) : (
-            <LinearGradient 
-              start={p1}
-              end={p2}
-              colors={[corSombra.value, corMeioTom.value, corHighlight.value]}
-              stops={[0.0, 0.45, 1.0]}
-            />
-          );
-        })}
+        {tier_atual === 'marmore' ? (
+          <RadialGradient 
+            c={vec(regiao.centro.x, regiao.centro.y)}
+            r={35}
+            colors={coresRadial}
+            positions={[0.0, 0.6, 1.0]}
+          />
+        ) : (
+          <LinearGradient 
+            start={p1}
+            end={p2}
+            colors={coresGradiente}
+            positions={[0.0, 0.45, 1.0]}
+          />
+        )}
       </Path>
 
       <Path 
@@ -287,6 +295,10 @@ export default function EstatuaSVG({
     );
   });
 
+  const coresBase = useDerivedValue(() => {
+    return [corPreenchimentoBase.value, corContornoBase.value];
+  });
+
   // Opacidade do shader de ruído para Pedra (só ativa quando tierIndex = 1)
   const noiseOpacity = useDerivedValue(() => {
     // Retorna pico de opacidade em 1.0 (Pedra), senão decai para 0
@@ -354,7 +366,7 @@ export default function EstatuaSVG({
             <LinearGradient
               start={vec(60, 50)}
               end={vec(180, 430)}
-              colors={[corPreenchimentoBase, corContornoBase]}
+              colors={coresBase}
             />
           </Path>
 
@@ -383,6 +395,7 @@ export default function EstatuaSVG({
                 regiao={regiao}
                 definicao={definicao}
                 tierIndexAnim={tierIndexAnim}
+                tier_atual={estado.tier_atual}
                 frente={frente}
                 scale={scale}
               />

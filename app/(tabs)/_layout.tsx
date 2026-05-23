@@ -16,8 +16,8 @@ export default function TabLayout() {
           paddingBottom: 8,
           paddingTop: 8,
         },
-        tabBarActiveTintColor: tokens.accent.bronze,
-        tabBarInactiveTintColor: tokens.fg.muted,
+        tabBarActiveTintColor: tokens.accent.bronze as string,
+        tabBarInactiveTintColor: tokens.fg.muted as string,
         tabBarLabelStyle: {
           fontFamily: 'Inter',
           fontSize: 11,
@@ -30,7 +30,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <House color={color} size={24} weight={focused ? 'regular' : 'light'} />
+            <House color={color as any} size={24} weight={focused ? 'regular' : 'light'} />
           ),
         }}
       />
@@ -39,7 +39,7 @@ export default function TabLayout() {
         options={{
           title: 'Catálogo',
           tabBarIcon: ({ color, focused }) => (
-            <BookOpen color={color} size={24} weight={focused ? 'regular' : 'light'} />
+            <BookOpen color={color as any} size={24} weight={focused ? 'regular' : 'light'} />
           ),
         }}
       />
@@ -48,7 +48,7 @@ export default function TabLayout() {
         options={{
           title: 'Progresso',
           tabBarIcon: ({ color, focused }) => (
-            <ChartLineUp color={color} size={24} weight={focused ? 'regular' : 'light'} />
+            <ChartLineUp color={color as any} size={24} weight={focused ? 'regular' : 'light'} />
           ),
         }}
       />
@@ -57,7 +57,7 @@ export default function TabLayout() {
         options={{
           title: 'Ciência',
           tabBarIcon: ({ color, focused }) => (
-            <GraduationCap color={color} size={24} weight={focused ? 'regular' : 'light'} />
+            <GraduationCap color={color as any} size={24} weight={focused ? 'regular' : 'light'} />
           ),
         }}
       />
@@ -66,7 +66,7 @@ export default function TabLayout() {
         options={{
           title: 'Nutrição',
           tabBarIcon: ({ color, focused }) => (
-            <Egg color={color} size={24} weight={focused ? 'regular' : 'light'} />
+            <Egg color={color as any} size={24} weight={focused ? 'regular' : 'light'} />
           ),
         }}
       />

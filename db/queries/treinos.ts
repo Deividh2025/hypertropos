@@ -28,17 +28,20 @@ export async function listarRegistrosRecentes(limite: number = 10): Promise<Regi
     let cached: RegistroSessao[] = cachedStr ? JSON.parse(cachedStr) : [];
     
     // 2. Em paralelo (sem await), busca do Supabase para manter cache atualizado
-    supabase.from('registros_sessao')
-      .select('*')
-      .order('data_inicio', { ascending: false })
-      .limit(limite)
-      .then(async ({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase.from('registros_sessao')
+          .select('*')
+          .order('data_inicio', { ascending: false })
+          .limit(limite);
         if (!error && data && data.length > 0) {
           // Na implementação real os relacionamentos viriam em um select aninhado
           await AsyncStorage.setItem(RECENT_SESSIONS_KEY, JSON.stringify(data));
         }
-      })
-      .catch(err => console.error('Background fetch falhou:', err));
+      } catch (err) {
+        console.error('Background fetch falhou:', err);
+      }
+    })();
       
     return cached.slice(0, limite);
   } catch (error) {

@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { OnboardingScreen } from '../../components/onboarding/OnboardingScreen';
 import { SelectableCard } from '../../components/onboarding/SelectableCard';
 import { useOnboardingStore } from '../../stores/onboardingStore';
-import { Nivel } from '../../types/exercicio';
+import { Nivel } from '../../types';
 
 export default function NivelTreinoScreen() {
   const router = useRouter();

@@ -83,8 +83,9 @@ export default function ExecucaoScreen() {
 
   return (
     <Container className="bg-canvas">
-      {/* Maximum Immersion StatusBar dark styling */}
-      <StatusBar style="dark" hidden={false} translucent />
+      {/* Maximum Immersion StatusBar light styling */}
+      <StatusBar style="light" />
+
 
       {loading ? (
         <View className="flex-1 justify-center items-center">

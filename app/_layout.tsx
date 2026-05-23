@@ -25,8 +25,61 @@ import '../global.css'
 import { useColorScheme } from '@/components/useColorScheme'
 import { initializeSchema } from '../db/schema-local'
 import { useSyncEngine } from '../db/sync-engine'
+import { motorAudio } from '../lib/motor-audio'
+import { ErrorBoundaryProps } from 'expo-router'
+import { View, Pressable } from 'react-native'
+import { Warning, ArrowCounterClockwise } from 'phosphor-react-native'
+import { Texto } from '../components/ui/Texto'
+import { IndicadorConexao } from '../components/ui/IndicadorConexao'
 
-export { ErrorBoundary } from 'expo-router'
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return (
+    <View style={{ flex: 1, backgroundColor: '#141210', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+      <Warning size={64} color="#D4A373" weight="duotone" />
+      
+      <Texto variant="h1" color="marble" style={{ marginTop: 24, textAlign: 'center', fontSize: 24 }}>
+        Ops! Algo saiu da rota científica
+      </Texto>
+      
+      <View style={{ backgroundColor: '#1E1B18', borderWidth: 1, borderColor: '#2E2A25', padding: 16, borderRadius: 8, width: '100%', marginTop: 24, gap: 8 }}>
+        <Texto variant="bodyBold" color="bronze">O que houve:</Texto>
+        <Texto variant="caption" color="secondary" style={{ fontSize: 13, fontFamily: 'monospace' }}>
+          {error.message || 'Ocorreu uma falha de rendering ou de estado interno.'}
+        </Texto>
+        
+        <Texto variant="bodyBold" color="bronze" style={{ marginTop: 8 }}>Consequência:</Texto>
+        <Texto variant="caption" color="secondary">
+          A visualização foi interrompida para evitar corrupção dos seus dados locais.
+        </Texto>
+
+        <Texto variant="bodyBold" color="bronze" style={{ marginTop: 8 }}>Ação sugerida:</Texto>
+        <Texto variant="caption" color="secondary">
+          Tente recarregar a tela ou reinicie o aplicativo se o erro persistir.
+        </Texto>
+      </View>
+      
+      <Pressable
+        onPress={retry}
+        style={{
+          marginTop: 32,
+          backgroundColor: '#D4A373',
+          paddingVertical: 14,
+          paddingHorizontal: 28,
+          borderRadius: 8,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 8,
+          minHeight: 48
+        }}
+      >
+        <ArrowCounterClockwise size={20} color="#141210" weight="bold" />
+        <Texto variant="bodyBold" style={{ color: '#141210' }}>
+          Tentar Novamente
+        </Texto>
+      </Pressable>
+    </View>
+  )
+}
 
 export const unstable_settings = {
   // Garante que ao recarregar em /modal, o botão de voltar seja exibido.
@@ -51,8 +104,9 @@ export default function RootLayout() {
   useEffect(() => {
     if (error) throw error
     
-    // Inicializa o banco de dados local em background
+    // Inicializa o banco de dados local em background e o motor de áudio
     initializeSchema().catch(console.error);
+    motorAudio.inicializar().catch(console.error);
   }, [error])
 
   useEffect(() => {
@@ -103,12 +157,15 @@ function RootLayoutNav() {
   return (
     // ThemeProvider aplica o tema claro/escuro do sistema ao Expo Router
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {/* (tabs) é a rota principal — sem header próprio, gerenciado pelo Tabs */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <View style={{ flex: 1 }}>
+        <IndicadorConexao />
+        <Stack>
+          {/* (tabs) é a rota principal — sem header próprio, gerenciado pelo Tabs */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </View>
     </ThemeProvider>
   )
 }

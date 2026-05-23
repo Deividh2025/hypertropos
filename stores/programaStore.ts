@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ProgramaAtivo, SessaoTemplate, Perfil, Exercicio } from '../types';
+import { ProgramaAtivo, SessaoTemplate, Perfil, Exercicio, Genero, Nivel, NivelAtividade, HorarioTreino, FaseNutricional } from '../types';
 import { obterProgramaAtivo, salvarPrograma, obterSessaoDoDia } from '../db/queries/programa';
 import { obterPerfil } from '../db/queries/perfil';
 import { listarExercicios } from '../db/queries/exercicios';
@@ -27,24 +27,24 @@ interface ProgramaState {
 const FALLBACK_PERFIL: Perfil = {
   id: 'default',
   idade: 30,
-  genero_biologico: 'masculino',
+  genero_biologico: Genero.MASCULINO,
   peso_corporal_kg: 75,
   altura_cm: 175,
-  nivel: 'iniciante' as any,
-  nivel_atividade_extra_treino: 'moderado' as any,
+  nivel: Nivel.INICIANTE,
+  nivel_atividade_extra_treino: NivelAtividade.MODERADO,
   dias_disponiveis_semana: 3,
   duracao_alvo_sessao_min: 45,
-  horario_preferido_treino: '18:00',
+  horario_preferido_treino: HorarioTreino.NOITE,
   equipamento_disponivel: ['nenhum'] as any[],
   split_atual: 'full_body',
   objetivo: 'hipertrofia',
   restricoes_articulares: [],
   historico_clinico: [],
   meta_proteina_g_kg: 1.6,
-  fase_nutricional: 'manutencao',
+  fase_nutricional: FaseNutricional.MANUTENCAO,
   usa_creatina: false,
   usa_cafeina: false,
-  lembretes_ativos: [],
+  lembretes_ativos: {},
   data_criacao: new Date().toISOString(),
   ultima_atualizacao: new Date().toISOString(),
 };

@@ -27,7 +27,7 @@ import { Conquista } from '../../types/gamificacao';
 import * as Icons from 'phosphor-react-native';
 import {
   Trophy,
-  CalendarDays,
+  Calendar,
   Lock,
   Flame,
   Clock,
@@ -38,7 +38,8 @@ import {
   ClockCounterClockwise,
 } from 'phosphor-react-native';
 import { SCULPTED_EASING } from '../../constants/easing';
-import { estatisticasGerais, volumeSemanaPorGrupo } from '../../db/queries/agregacoes';
+import { estatisticasGerais, volumeSemanaPorGrupo, historicoSessoes, linhaTempoPadraoMovimento, SessaoComResumo } from '../../db/queries/agregacoes';
+import SilhuetaProgresso from '../../components/silhueta/SilhuetaProgresso';
 import {
   Skeleton,
   SkeletonKPIs,
@@ -160,6 +161,12 @@ export default function ProgressoScreen() {
   const [volumeData, setVolumeData] = useState<{ grupo: string; series_efetivas: number; alvo: number }[]>([]);
   const [carregandoVolume, setCarregandoVolume] = useState<boolean>(true);
 
+  // Estados para histórico e linha do tempo
+  const [historicoData, setHistoricoData] = useState<SessaoComResumo[]>([]);
+  const [carregandoHistorico, setCarregandoHistorico] = useState<boolean>(true);
+  const [linhaTempoData, setLinhaTempoData] = useState<Record<string, any[]>>({});
+  const [carregandoLinhaTempo, setCarregandoLinhaTempo] = useState<boolean>(true);
+
   // Conquista selecionada para o bottom sheet
   const [conquistaSelecionada, setConquistaSelecionada] = useState<Conquista | null>(null);
 
@@ -196,6 +203,46 @@ export default function ProgressoScreen() {
     }
   }, []);
 
+  const carregarHistorico = useCallback(async () => {
+    setCarregandoHistorico(true);
+    try {
+      const data = await historicoSessoes();
+      setHistoricoData(data);
+    } catch (error) {
+      console.error('Erro ao carregar historico:', error);
+    } finally {
+      setCarregandoHistorico(false);
+    }
+  }, []);
+
+  const carregarLinhaTempo = useCallback(async () => {
+    setCarregandoLinhaTempo(true);
+    try {
+      const padroes = [
+        'push_horizontal',
+        'push_vertical',
+        'pull_horizontal',
+        'pull_vertical',
+        'joelho_dominante',
+        'quadril_dominante',
+        'panturrilha',
+        'core',
+      ];
+      const results: Record<string, any[]> = {};
+      await Promise.all(
+        padroes.map(async (padrao) => {
+          const res = await linhaTempoPadraoMovimento(padrao);
+          results[padrao] = res;
+        })
+      );
+      setLinhaTempoData(results);
+    } catch (error) {
+      console.error('Erro ao carregar linha do tempo:', error);
+    } finally {
+      setCarregandoLinhaTempo(false);
+    }
+  }, []);
+
   useEffect(() => {
     carregarDados();
   }, [carregarDados]);
@@ -203,17 +250,22 @@ export default function ProgressoScreen() {
   useEffect(() => {
     if (abaAtiva === 'volume') {
       carregarVolume(semanaOffset);
+    } else if (abaAtiva === 'historico') {
+      carregarHistorico();
+    } else if (abaAtiva === 'linha_tempo') {
+      carregarLinhaTempo();
     }
-  }, [abaAtiva, semanaOffset, carregarVolume]);
+  }, [abaAtiva, semanaOffset, carregarVolume, carregarHistorico, carregarLinhaTempo]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([
-      carregarDados(),
-      abaAtiva === 'volume' ? carregarVolume(semanaOffset) : Promise.resolve(),
-    ]);
+    const promises: Promise<any>[] = [carregarDados()];
+    if (abaAtiva === 'volume') promises.push(carregarVolume(semanaOffset));
+    if (abaAtiva === 'historico') promises.push(carregarHistorico());
+    if (abaAtiva === 'linha_tempo') promises.push(carregarLinhaTempo());
+    await Promise.all(promises);
     setRefreshing(false);
-  }, [carregarDados, abaAtiva, semanaOffset, carregarVolume]);
+  }, [carregarDados, abaAtiva, semanaOffset, carregarVolume, carregarHistorico, carregarLinhaTempo]);
 
   // Abre e fecha detalhes da conquista
   const abrirDetalhes = (conquista: Conquista) => {
@@ -235,6 +287,20 @@ export default function ProgressoScreen() {
     { id: 'historico', label: 'Histórico', icon: ClockCounterClockwise },
   ];
 
+  const obterNomeExibicaoPadrao = (padrao: string) => {
+    switch (padrao) {
+      case 'push_horizontal': return 'Empurrar Horizontal (Peito, Tríceps)';
+      case 'push_vertical': return 'Empurrar Vertical (Ombros)';
+      case 'pull_horizontal': return 'Puxar Horizontal (Costas, Bíceps)';
+      case 'pull_vertical': return 'Puxar Vertical (Costas Altas)';
+      case 'joelho_dominante': return 'Joelho Dominante (Quadríceps)';
+      case 'quadril_dominante': return 'Quadril Dominante (Glúteos, Posterior)';
+      case 'panturrilha': return 'Panturrilha';
+      case 'core': return 'Core / Abdômen';
+      default: return padrao;
+    }
+  };
+
   // Renderizador do conteúdo da aba selecionada (com transições animadas)
   const renderConteudoAba = () => {
     const isCarregando = carregandoGamificacao || carregandoKPIs;
@@ -243,12 +309,8 @@ export default function ProgressoScreen() {
       case 'silhueta':
         if (isCarregando) return <SkeletonSilhueta />;
         return (
-          <Animated.View entering={FadeIn.duration(200)} className="flex-1 p-6 items-center justify-center">
-            <User size={64} color={tokens.accent.bronze} weight="light" />
-            <Texto variant="h2" className="mt-4 font-bold">Silhueta Progresso</Texto>
-            <Texto variant="body" color="secondary" className="text-center mt-2 max-w-[280px]">
-              Aba Silhueta com estátua vetorial Skia interativa e auditoria de destreino biológico.
-            </Texto>
+          <Animated.View entering={FadeIn.duration(200)} className="flex-1 px-6 pt-2">
+            <SilhuetaProgresso />
           </Animated.View>
         );
 
@@ -376,26 +438,158 @@ export default function ProgressoScreen() {
         );
 
       case 'linha_tempo':
-        if (isCarregando) return <SkeletonLinhaTempo />;
+        if (carregandoLinhaTempo) return <SkeletonLinhaTempo />;
+        
+        const padroes = [
+          'push_horizontal',
+          'push_vertical',
+          'pull_horizontal',
+          'pull_vertical',
+          'joelho_dominante',
+          'quadril_dominante',
+          'panturrilha',
+          'core'
+        ];
+
         return (
-          <Animated.View entering={FadeIn.duration(200)} className="flex-1 p-6 items-center justify-center">
-            <TrendUp size={64} color={tokens.accent.bronze} weight="light" />
-            <Texto variant="h2" className="mt-4 font-bold">Linha do Tempo</Texto>
-            <Texto variant="body" color="secondary" className="text-center mt-2 max-w-[280px]">
-              Progressão visual de variações organizadas em escadas por padrão de movimento (PadraoMovimento).
-            </Texto>
+          <Animated.View entering={FadeIn.duration(200)} className="flex-1 px-6 pt-2">
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+              {padroes.map((padrao) => {
+                const itens = linhaTempoData[padrao] || [];
+                const temHistorico = itens.length > 0;
+                
+                return (
+                  <Card key={padrao} padding="md" className="mb-4 border border-border-subtle/50">
+                    <View className="flex-row justify-between items-center mb-3">
+                      <Texto variant="bodyBold" color="primary">{obterNomeExibicaoPadrao(padrao)}</Texto>
+                      <View className={`px-2 py-0.5 rounded-full ${temHistorico ? 'bg-accent-bronze/10' : 'bg-elevated'}`}>
+                        <Texto variant="caption" color={temHistorico ? 'bronze' : 'muted'} className="text-[10px] font-semibold">
+                          {temHistorico ? `${itens.length} nível(is)` : 'Não iniciado'}
+                        </Texto>
+                      </View>
+                    </View>
+
+                    {!temHistorico ? (
+                      <Texto variant="caption" color="muted" className="italic py-2 px-1">
+                        Nenhum exercício executado para este padrão nos registros.
+                      </Texto>
+                    ) : (
+                      <View className="pl-2 gap-4 relative">
+                        {/* Linha vertical conectora */}
+                        <View 
+                          style={{ 
+                            position: 'absolute', 
+                            left: 11, 
+                            top: 8, 
+                            bottom: 8, 
+                            width: 2, 
+                            backgroundColor: 'rgba(193, 154, 107, 0.2)' 
+                          }} 
+                        />
+                        {itens.map((item, index) => {
+                          const isUltimo = index === itens.length - 1;
+                          const d = new Date(item.semana);
+                          const dataFormatada = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                          
+                          return (
+                            <View key={item.semana + index} className="flex-row items-center gap-3.5">
+                              <View 
+                                style={{ 
+                                  width: 8, 
+                                  height: 8, 
+                                  borderRadius: 4, 
+                                  backgroundColor: isUltimo ? tokens.accent.gold : tokens.accent.bronze,
+                                  borderWidth: isUltimo ? 2 : 0,
+                                  borderColor: '#1A1715',
+                                  marginLeft: 8,
+                                  zIndex: 10
+                                }} 
+                              />
+                              <View className="flex-1">
+                                <View className="flex-row justify-between items-center">
+                                  <Texto variant={isUltimo ? 'bodyBold' : 'body'} color={isUltimo ? 'primary' : 'secondary'}>
+                                    {item.exercicio_nome}
+                                  </Texto>
+                                  <Texto variant="caption" color="muted">Semana {dataFormatada}</Texto>
+                                </View>
+                                <Texto variant="caption" color="muted" className="text-[11px]">
+                                  Nível de Escada: {item.nivel_escada}
+                                </Texto>
+                              </View>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </Card>
+                );
+              })}
+            </ScrollView>
           </Animated.View>
         );
 
       case 'historico':
-        if (isCarregando) return <SkeletonHistorico />;
+        if (carregandoHistorico) return <SkeletonHistorico />;
+        
         return (
-          <Animated.View entering={FadeIn.duration(200)} className="flex-1 p-6 items-center justify-center">
-            <ClockCounterClockwise size={64} color={tokens.accent.bronze} weight="light" />
-            <Texto variant="h2" className="mt-4 font-bold">Histórico de Sessões</Texto>
-            <Texto variant="body" color="secondary" className="text-center mt-2 max-w-[280px]">
-              Histórico cronológico de sessões com estatísticas de duração, séries concluídas e modal de auditoria.
-            </Texto>
+          <Animated.View entering={FadeIn.duration(200)} className="flex-1 px-6 pt-2">
+            {historicoData.length === 0 ? (
+              <View className="items-center justify-center py-10 gap-2">
+                <ClockCounterClockwise size={48} color={tokens.fg.muted} weight="light" />
+                <Texto variant="bodyBold" className="text-center mt-2">Sem treinos realizados</Texto>
+                <Texto variant="caption" color="muted" className="text-center max-w-[240px]">
+                  Seu primeiro treino concluído aparecerá aqui. Vamos começar?
+                </Texto>
+              </View>
+            ) : (
+              <FlatList
+                data={historicoData}
+                keyExtractor={(item) => item.id}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 40 }}
+                renderItem={({ item }) => {
+                  const d = new Date(item.data);
+                  const dataFormatada = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+                  const duracaoMinutos = Math.round(item.duracao_segundos / 60);
+
+                  return (
+                    <Card padding="md" className="mb-3 border border-border-subtle/50">
+                      <View className="flex-row justify-between items-center mb-2">
+                        <View className="flex-row items-center gap-2">
+                          <Calendar size={16} color={tokens.accent.bronze} />
+                          <Texto variant="captionBold" color="secondary">{dataFormatada}</Texto>
+                        </View>
+                        <View className={`flex-row items-center gap-1 py-0.5 px-2 rounded-xs ${item.concluida ? 'bg-feedback-success/10 border border-feedback-success/20' : 'bg-feedback-warning/10 border border-feedback-warning/20'}`}>
+                          {item.concluida ? (
+                            <Icons.CheckCircle size={12} color={tokens.feedback.success} weight="fill" />
+                          ) : (
+                            <Icons.Warning size={12} color={tokens.feedback.warning} weight="fill" />
+                          )}
+                          <Texto variant="caption" color={item.concluida ? 'success' : 'warning'} className="text-[10px] font-semibold">
+                            {item.concluida ? 'Concluído' : 'Incompleto'}
+                          </Texto>
+                        </View>
+                      </View>
+                      <Texto variant="bodyBold" className="mb-2">{item.nome}</Texto>
+                      <View className="flex-row justify-between items-center pt-2 border-t border-border-subtle/30">
+                        <View className="flex-row items-center gap-1.5">
+                          <Clock size={14} color={tokens.fg.muted} />
+                          <Texto variant="caption" color="muted">{duracaoMinutos} min</Texto>
+                        </View>
+                        <View className="flex-row items-center gap-1.5">
+                          <Barbell size={14} color={tokens.fg.muted} />
+                          <Texto variant="caption" color="muted">{item.series_totais} séries</Texto>
+                        </View>
+                        <View className="flex-row items-center gap-1.5">
+                          <Icons.Sparkle size={14} color={tokens.fg.muted} />
+                          <Texto variant="caption" color="muted">{item.percentual_conclusao}% concluído</Texto>
+                        </View>
+                      </View>
+                    </Card>
+                  );
+                }}
+              />
+            )}
           </Animated.View>
         );
 
@@ -556,9 +750,9 @@ export default function ProgressoScreen() {
         <Animated.View
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(200)}
-          style={[StyleSheet.absoluteFillObject, styles.bottomSheetOverlay]}
+          style={[StyleSheet.absoluteFill, styles.bottomSheetOverlay]}
         >
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={fecharDetalhes} />
+          <Pressable style={StyleSheet.absoluteFill} onPress={fecharDetalhes} />
 
           <Animated.View
             entering={SlideInDown.duration(400).easing(SCULPTED_EASING)}
@@ -619,7 +813,7 @@ export default function ProgressoScreen() {
             {/* Informações adicionais */}
             {conquistaSelecionada.desbloqueada_em ? (
               <View className="flex-row items-center gap-1.5 mb-6">
-                <CalendarDays size={16} color={tokens.fg.muted} />
+                <Calendar size={16} color={tokens.fg.muted} />
                 <Texto variant="caption" color="muted">
                   Conquistada em{' '}
                   {(() => {

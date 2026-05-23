@@ -1,9 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Mocks to bypass React Native flow type parsing errors in pure Node test environment
+vi.mock('react-native', () => ({
+  AppState: {
+    addEventListener: vi.fn(() => ({ remove: vi.fn() })),
+    currentState: 'active',
+  },
+  Platform: {
+    OS: 'android',
+  },
+}));
+
+vi.mock('expo-av', () => ({
+  Audio: {
+    Sound: vi.fn(),
+    setAudioModeAsync: vi.fn(),
+  },
+}));
+
+vi.mock('../lib/motor-audio', () => ({
+  motorAudio: {
+    inicializar: vi.fn(),
+    tocarSom: vi.fn(),
+    configurarSomAtivo: vi.fn(),
+    obterSomAtivo: vi.fn(() => true),
+  },
+}));
+
 import { useSessaoStore } from '../stores/sessaoStore';
 import { SessaoTemplate, ExercicioPrescrito } from '../types/treino';
 import { Exercicio, GrupoMuscular, PadraoMovimento, NivelMinimo } from '../types/exercicio';
 
 // Mock de expo-haptics para rodar no ambiente de teste puro do Node
+
 vi.mock('expo-haptics', () => ({
   impactAsync: vi.fn(),
   notificationAsync: vi.fn(),
@@ -40,9 +69,11 @@ const MOCK_EXERCICIO: Exercicio = {
   nivel_minimo: NivelMinimo.INICIANTE,
   nivel_escada: 1,
   descricao_execucao: 'Flexão convencional',
-  cadencia_excentrica: 3,
-  cadencia_isometrica: 0,
-  cadencia_concentrica: 1
+  cadencia_recomendada: {
+    excentrica: 3,
+    isometrica: 0,
+    concentrica: 1
+  }
 };
 
 const MOCK_SESSAO: SessaoTemplate = {

@@ -17,11 +17,13 @@ import { useSessaoStore } from '../../stores/sessaoStore';
 import { SCULPTED_EASING } from '../../constants/easing';
 import { Check, Plus, Minus, Trophy } from 'phosphor-react-native';
 import { ParticulasCinzel } from '../feedback/ParticulasCinzel';
+import { useSound } from '../../hooks/useSound';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export function BotaoConcluirSerie() {
   const { tokens } = useTheme();
+  const { tocarSom } = useSound();
   const { 
     exerciciosPrescritos, 
     exercicioAtualIndex, 
@@ -62,6 +64,9 @@ export function BotaoConcluirSerie() {
   };
 
   const handleConfirmar = () => {
+    // Dispara som de conclusão
+    tocarSom('conclusao-serie');
+    
     // Dispara animação de partículas de cinzel
     setExplosaoTrigger(prev => prev + 1);
     

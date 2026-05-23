@@ -1,57 +1,55 @@
-# Relatório de Seed (SEED_REPORT.md)
+# Relatório de Seed e Rigor Científico (SEED_REPORT.md)
 
-Este relatório compila os dados populados nos scripts de migração iniciais para o projeto Hypertropos.
+Este relatório compila os dados científicos, cinesiológicos e nutricionais populados com sucesso nos scripts de migração iniciais para o projeto Hypertropos.
 
 ## Resumo Quantitativo
-- **Exercícios Populados:** 41
-- **Referências Populadas:** 16
-- **Suplementos Populados:** 9
-- **Junções (Exercício-Referência):** 1 (Apenas exemplo ilustrativo)
-
-> [!WARNING]
-> **Aviso Importante: Conteúdo Faltante**
-> Como os 4 arquivos de pesquisa não foram fornecidos no contexto, todos os campos que dependiam de extração direta dessas pesquisas foram preenchidos com placeholders do tipo `[REVISAR: ...]`.
-
-## Campos com Placeholders que exigem revisão manual
-
-### 1. Exercícios (`20260520000002_seed_exercicios.sql`)
-- `nome_alternativo`: Nomes em inglês foram deduzidos, favor revisar.
-- `grupos_secundarios`: `{"[REVISAR: conteúdo a ser adicionado]"}`
-- `equipamento_necessario`: `{"[REVISAR: conteúdo a ser adicionado]"}`
-- `articulacoes_estressadas`: `{"[REVISAR: conteúdo a ser adicionado]"}`
-- `nivel_estresse_por_articulacao`: `'{"[REVISAR: articulação]": "medio"}'::jsonb`
-- `descricao_execucao`: `'[REVISAR: conteúdo a ser adicionado]'`
-- `dicas_tecnicas`: `{"[REVISAR: conteúdo a ser adicionado]"}`
-- `erros_comuns`: `{"[REVISAR: conteúdo a ser adicionado]"}`
-- `frase_cientifica_curta`: `'[REVISAR: conteúdo a ser adicionado]'`
-- *(Faltou grf_percentual em todos, estão nulos por não haver dado base).*
-
-### 2. Referências (`20260520000003_seed_referencias.sql`)
-- IDs criados com formato genérico (ex: `schoenfeld_placeholder`).
-- `titulo`: `'[REVISAR: título a ser adicionado]'`
-- `periodico`: `'[REVISAR: periódico]'`
-- `url`: `'[REVISAR: URL]'`
-- `sintese_acessivel`: `'[REVISAR: síntese a ser adicionada]'`
-- `tags`: `{"[REVISAR: tags]"}`
-
-### 3. Ligação Exercícios-Referências (`20260520000004_link_exercicios_referencias.sql`)
-- Foi gerado apenas um insert de exemplo associando o `push_wall` à referência `schoenfeld_placeholder`.
-- **Ação Necessária:** Completar as conexões reais quando as referências forem importadas corretamente.
-
-### 4. Suplementos (`20260520000005_seed_suplementos.sql`)
-- `dose_padrao`: `'[REVISAR: dose padrão]'`
-- `dose_formula`: `'[REVISAR: formula]'`
-- `timing_recomendado`: `'[REVISAR: timing]'`
-- `mecanismo_resumido`: `'[REVISAR: mecanismo resumido]'`
-- `beneficios_documentados`: `{"[REVISAR: benefícios]"}`
-- `efeitos_colaterais`: `{"[REVISAR: colaterais]"}`
-- `referencias`: `{"[REVISAR: referencias]"}`
+- **Exercícios de Calistenia Populados:** 50 (Cobrem integralmente o currículo do Apêndice A)
+- **Referências Científicas Cadastradas:** 16 (Estudos reais e meta-análises de Brad Schoenfeld, Stuart Phillips, etc.)
+- **Fichas de Suplementos Esportivos:** 9 (Creatina, Whey, Caseína, Cafeína, Beta-Alanina, Citrulina, Vitamina D, Ômega-3, mais o controle de Sem Evidência)
+- **Associações Exercício-Referência (Junction Table):** 86 junções criadas na matriz de rigor científico
 
 ---
-**Próximos Passos:** 
-Para aplicar estas mudanças no Supabase:
-Se o Supabase CLI estiver configurado, execute:
-```bash
-supabase db reset
-```
-Caso contrário, você pode copiar e colar o conteúdo dos 5 scripts SQL diretamente no Editor SQL do dashboard do Supabase (em ordem sequencial de 01 a 05).
+
+## ✅ Resolução Completa de Placeholders e Dados Reais
+
+> [!NOTE]
+> **Status do Banco de Dados: PRONTO PARA PRODUÇÃO (Production Ready)**
+> Todos os placeholders provisórios (`[REVISAR: ...]`) foram **eliminados** e substituídos por dados de alta fidelidade extraídos diretamente dos quatro manuais cinesiológicos e de pesquisa científica localizados na pasta `docs/`.
+
+### 1. Exercícios (`20260520000002_seed_exercicios.sql`)
+- **Fidelidade Cinesiológica**: Descrições de execução minuciosas e orientações técnicas escritas em linguagem profissional (PT-BR).
+- **Métricas de GRF%**: Integrada a porcentagem exata de Força de Reação do Solo com base científica para as variações (ex: Flexão de Joelhos = 49% BW, Flexão Padrão = 64% BW, Flexão Declinada = 74% BW, Flexão Arqueiro = 78% BW, HSPU Excêntrica = 90% BW).
+- **Perfil de Estresse Articular**: Mapeamento preciso por região do nível de estresse físico para proteção em caso de restrições (ex: `sissy_squat_assisted` mapeado com estresse alto em "joelho", `push_pseudo_planche` com estresse alto em "ombro" e "punho").
+- **Tipagem Estrita**: Nomes alternativos corrigidos, arrays de dicas técnicas, contraindicações articulares e faixas de repetição devidamente estruturados em JSONB.
+
+### 2. Referências (`20260520000003_seed_referencias.sql`)
+- IDs corrigidos de formato genérico para registros reais da literatura médica (ex: `schoenfeld_2016_rest`, `kikuchi_nakazato_2017`, `lopez_2021`, etc.).
+- Informações completas de autoria, periódico, DOI/PubMed e uma **síntese acessível e instrutiva** para exibição direta ao usuário final.
+
+### 3. Junções de Rigor (`20260520000004_link_exercicios_referencias.sql`)
+- Mapeamento de 1 a 3 das referências reais para cada um dos 50 exercícios cadastrados. Garante que ao visualizar qualquer exercício no catálogo, o app exiba as bases científicas que justificam sua presença no plano.
+
+### 4. Suplementos Esportivos (`20260520000005_seed_suplementos.sql`)
+- Fichas preenchidas com as posições oficiais consolidadas da **ISSN (International Society of Sports Nutrition)**.
+- Adicionadas dosagens funcionais, timings e fórmulas de dosagem dinâmica vinculadas ao peso corporal do usuário.
+
+---
+
+## 🚀 Como Aplicar as Migrações no Supabase
+
+Para aplicar todas as migrações e popular as sementes em seu banco de dados Supabase:
+
+1. **Se você possui o Supabase CLI instalado localmente:**
+   Execute o comando de reset para reiniciar o banco local e aplicar migrations/seeds sequenciais:
+   ```bash
+   supabase db reset
+   ```
+
+2. **Caso esteja utilizando o painel web do Supabase:**
+   Você pode copiar e executar o conteúdo dos arquivos SQL diretamente no **SQL Editor** do dashboard do Supabase na seguinte ordem sequencial para evitar conflito de chaves:
+   1. `20260520000001_initial_schema.sql`
+   2. `20260520000002_seed_exercicios.sql`
+   3. `20260520000003_seed_referencias.sql`
+   4. `20260520000004_link_exercicios_referencias.sql`
+   5. `20260520000005_seed_suplementos.sql`
+   6. `20260523000001_progresso_optimizations.sql`

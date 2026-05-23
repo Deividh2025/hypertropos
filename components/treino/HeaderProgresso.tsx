@@ -5,6 +5,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useSessaoStore } from '../../stores/sessaoStore';
 import { DotsThreeVertical, Play, Pause, SkipForward, XCircle, Question } from 'phosphor-react-native';
 import { useRouter } from 'expo-router';
+import { BotaoMusica } from './BotaoMusica';
 
 export function HeaderProgresso() {
   const { tokens } = useTheme();
@@ -75,14 +76,17 @@ export function HeaderProgresso() {
         </Texto>
       </View>
 
-      {/* Botão Menu */}
-      <Pressable 
-        onPress={() => setMenuVisible(true)}
-        className="p-2 -mr-2 w-[44px] h-[44px] justify-center items-center rounded-full"
-        style={({ pressed }) => pressed && { backgroundColor: tokens.bg.highlight }}
-      >
-        <DotsThreeVertical size={24} color={tokens.fg.primary} weight="bold" />
-      </Pressable>
+      {/* Botões de Ação na Direita */}
+      <View className="flex-row items-center gap-2">
+        <BotaoMusica style={{ width: 38, height: 38, borderRadius: 19 }} />
+        <Pressable 
+          onPress={() => setMenuVisible(true)}
+          className="p-2 -mr-2 w-[44px] h-[44px] justify-center items-center rounded-full"
+          style={({ pressed }) => pressed && { backgroundColor: tokens.bg.highlight }}
+        >
+          <DotsThreeVertical size={24} color={tokens.fg.primary} weight="bold" />
+        </Pressable>
+      </View>
 
       {/* Modal Dropdown do Menu */}
       <Modal

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, ScrollView, ActivityIndicator, Pressable, Alert } from 'react-native';
+import { View, ScrollView, Pressable, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Container } from '../../components/ui/Container';
 import { Texto } from '../../components/ui/Texto';
@@ -11,6 +11,8 @@ import { listarExercicios } from '../../db/queries/exercicios';
 import { Exercicio, ExercicioPrescrito } from '../../types';
 import { CaretDown, CaretUp, ShieldCheck, Clock, Barbell, ArrowLeft } from 'phosphor-react-native';
 import * as Haptics from 'expo-haptics';
+import { SkeletonPreTreino } from '../../components/ui/Skeletons';
+
 
 // Componente de Exercício Prescrito com expansão inline memoizado
 const ExercicioItem = React.memo(({ 
@@ -228,7 +230,7 @@ export default function PreTreinoScreen() {
         <Pressable 
           onPress={() => router.back()} 
           className="p-2 -ml-2"
-          style={{ hitSlop: { top: 15, bottom: 15, left: 15, right: 15 } }}
+          hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
         >
           <ArrowLeft size={20} color={tokens.fg.primary} />
         </Pressable>
@@ -236,10 +238,9 @@ export default function PreTreinoScreen() {
       </View>
 
       {loading ? (
-        <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color={tokens.accent.bronze} />
-        </View>
+        <SkeletonPreTreino />
       ) : (
+
         <ScrollView 
           contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: 160 }}
           showsVerticalScrollIndicator={false}

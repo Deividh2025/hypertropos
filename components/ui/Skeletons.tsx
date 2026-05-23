@@ -177,3 +177,144 @@ export function SkeletonHistorico() {
     </View>
   );
 }
+
+export function SkeletonArtigos() {
+  return (
+    <View className="flex-1 gap-4">
+      {[1, 2, 3, 4].map((i) => (
+        <View
+          key={i}
+          className="mb-4 bg-bg-elevated/40 border border-border-subtle/30 rounded-md p-4 min-h-[110px] gap-3"
+        >
+          <Skeleton width="40%" height={12} borderRadius={4} />
+          <Skeleton width="90%" height={20} />
+          <View className="flex-row gap-2">
+            <Skeleton width={60} height={16} />
+            <Skeleton width={50} height={16} />
+          </View>
+          <Skeleton width="30%" height={12} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
+export function SkeletonHome() {
+  return (
+    <View className="flex-1 p-6 gap-6 bg-canvas">
+      {/* Header */}
+      <View className="flex-row justify-between items-center mt-4">
+        <View className="gap-2">
+          <Skeleton width={120} height={24} />
+          <Skeleton width={180} height={16} />
+        </View>
+        <Skeleton width={44} height={44} borderRadius={22} />
+      </View>
+
+      {/* Gamification Card */}
+      <View className="w-full p-5 rounded-md border border-border-subtle bg-elevated/20 gap-4">
+        <View className="flex-row justify-between items-center">
+          <Skeleton width="40%" height={18} />
+          <Skeleton width="30%" height={18} />
+        </View>
+        <Skeleton width="100%" height={12} borderRadius={6} />
+        <View className="flex-row justify-between">
+          <Skeleton width="20%" height={12} />
+          <Skeleton width="20%" height={12} />
+        </View>
+      </View>
+
+      {/* Workout Card */}
+      <View className="w-full p-5 rounded-md border border-border-subtle bg-elevated/25 gap-4 mt-2">
+        <Skeleton width="50%" height={20} />
+        <Skeleton width="100%" height={16} />
+        <Skeleton width="80%" height={16} />
+        <View className="flex-row gap-4 mt-2">
+          <Skeleton width="25%" height={14} />
+          <Skeleton width="25%" height={14} />
+        </View>
+      </View>
+
+      {/* Start Button */}
+      <Skeleton width="100%" height={52} borderRadius={8} className="mt-auto mb-4" />
+    </View>
+  );
+}
+
+export function SkeletonPreTreino() {
+  return (
+    <View className="flex-1 p-6 gap-6">
+      {/* Metadata card skeleton */}
+      <View className="w-full p-5 rounded-md border border-border-subtle bg-elevated/20 gap-3">
+        <Skeleton width="40%" height={14} />
+        <Skeleton width="90%" height={16} />
+        <Skeleton width="60%" height={16} />
+      </View>
+
+      {/* Exercises list title */}
+      <Skeleton width={150} height={20} className="mt-2" />
+
+      {/* Exercises item cards */}
+      {[1, 2, 3].map((i) => (
+        <View key={i} className="w-full p-4 rounded-md border border-border-subtle bg-elevated/15 flex-row gap-4 items-center">
+          <Skeleton width={44} height={44} borderRadius={22} />
+          <View className="flex-1 gap-2">
+            <Skeleton width="60%" height={16} />
+            <Skeleton width="30%" height={12} />
+          </View>
+          <Skeleton width={32} height={16} />
+        </View>
+      ))}
+
+      {/* Start Button */}
+      <Skeleton width="100%" height={52} borderRadius={8} className="mt-auto mb-4" />
+    </View>
+  );
+}
+
+export function SkeletonExercicioDetalhe() {
+  return (
+    <View className="flex-1 bg-canvas">
+      {/* Header */}
+      <View className="px-6 py-4 flex-row items-center border-b border-border-subtle bg-canvas/90" style={{ height: 60 }}>
+        <Skeleton width={24} height={24} borderRadius={12} />
+        <Skeleton width={180} height={20} className="ml-4" />
+      </View>
+
+      {/* Visual Placeholder */}
+      <View className="w-full justify-center items-center border-b border-border-subtle bg-elevated/10" style={{ height: 240 }}>
+        <Skeleton width={160} height={160} borderRadius={8} />
+      </View>
+
+      {/* Tabs */}
+      <View className="flex-row border-b border-border-subtle bg-bg-elevated/20 h-[50px] items-center px-6 gap-4">
+        <Skeleton width="28%" height={16} />
+        <Skeleton width="28%" height={16} />
+        <Skeleton width="28%" height={16} />
+      </View>
+
+      {/* Content */}
+      <View className="p-6 gap-6">
+        <View className="gap-2">
+          <Skeleton width="40%" height={18} />
+          <Skeleton width="100%" height={12} />
+          <Skeleton width="95%" height={12} />
+          <Skeleton width="90%" height={12} />
+        </View>
+
+        <View className="gap-3">
+          <Skeleton width="30%" height={16} />
+          <View className="bg-bg-elevated/40 border border-border-subtle p-4 rounded-md gap-2.5">
+            <Skeleton width="90%" height={12} />
+            <Skeleton width="80%" height={12} />
+            <Skeleton width="85%" height={12} />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+
+
+

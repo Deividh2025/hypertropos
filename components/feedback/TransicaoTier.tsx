@@ -14,6 +14,7 @@ import { Texto } from '../ui/Texto';
 import { Botao } from '../ui/Botao';
 import { useTheme } from '../../hooks/useTheme';
 import { SCULPTED_EASING } from '../../constants/easing';
+import { useSound } from '../../hooks/useSound';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -32,6 +33,7 @@ interface MaterialDetails {
 
 export function TransicaoTier({ tierAntigo, tierNovo, aoFechar }: TransicaoTierProps) {
   const { tokens } = useTheme();
+  const { tocarSom } = useSound();
   const [fase, setFase] = useState<'inicio' | 'transicao' | 'revelado' | 'concluido'>('inicio');
 
   // Shared values para controlar as opacidades
@@ -73,7 +75,7 @@ export function TransicaoTier({ tierAntigo, tierNovo, aoFechar }: TransicaoTierP
 
   useEffect(() => {
     // === CRONOGRAMA DE ANIMAÇÃO CINEMATOGRÁFICA ===
-    console.log(`[SOM] transicao_tier iniciado: ${tierAntigo} -> ${tierNovo}`);
+    tocarSom('tier-transicao');
 
     // Haptic inicial sutil
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -130,7 +132,7 @@ export function TransicaoTier({ tierAntigo, tierNovo, aoFechar }: TransicaoTierP
     <Animated.View
       entering={FadeIn.duration(600)}
       exiting={FadeOut.duration(500)}
-      style={[StyleSheet.absoluteFillObject, styles.container]}
+      style={[StyleSheet.absoluteFill, styles.container]}
       className="justify-center items-center px-8 py-12"
     >
       <View className="flex-1 justify-center items-center w-full max-w-[450px] gap-8">

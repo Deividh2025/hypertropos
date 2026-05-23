@@ -33,6 +33,7 @@ export enum FaseNutricional {
 }
 
 export interface Perfil {
+  id?: string;
   idade: number;
   genero_biologico: Genero;
   peso_corporal_kg: number;
