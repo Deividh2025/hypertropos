@@ -1,197 +1,123 @@
 import React, { useEffect, useState } from 'react';
-import { View, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useKeepAwake } from 'expo-keep-awake';
+import { StatusBar } from 'expo-status-bar';
+
+// Componentes UI Básicos do Design System
 import { Container } from '../../components/ui/Container';
 import { Texto } from '../../components/ui/Texto';
-import { Card } from '../../components/ui/Card';
 import { Botao } from '../../components/ui/Botao';
+
+// Hooks e Stores do Sistema
 import { useTheme } from '../../hooks/useTheme';
 import { useProgramaStore } from '../../stores/programaStore';
+import { useSessaoStore } from '../../stores/sessaoStore';
 import { listarExercicios } from '../../db/queries/exercicios';
-import { gerarSessaoExpress } from '../../lib/sessao-express';
-import { Exercicio, ExercicioPrescrito } from '../../types';
-import { ArrowLeft, Barbell, Clock, Lightning, ShieldCheck, CheckCircle } from 'phosphor-react-native';
-import * as Haptics from 'expo-haptics';
+
+// Componentes da Tela de Execução Série a Série
+import { HeaderProgresso } from '../../components/treino/HeaderProgresso';
+import { VisualExercicio } from '../../components/treino/VisualExercicio';
+import { InfoSerie } from '../../components/treino/InfoSerie';
+import { FraseCientificaInline } from '../../components/treino/FraseCientificaInline';
+import { BotaoConcluirSerie } from '../../components/treino/BotaoConcluirSerie';
+import { TimerDescanso } from '../../components/treino/TimerDescanso';
+import { TransicaoExercicio } from '../../components/treino/TransicaoExercicio';
+import { CelebracaoFinalSessao } from '../../components/treino/CelebracaoFinalSessao';
 
 export default function ExecucaoScreen() {
+  // Impede que a tela apague enquanto o usuário realiza a sessão (TDAH e ergonomia)
+  useKeepAwake();
+
   const { tokens } = useTheme();
   const router = useRouter();
-  
+
   const { sessaoDoDia, modoExpress } = useProgramaStore();
-  const [exerciciosMap, setExerciciosMap] = useState<Record<string, Exercicio>>({});
+  const { statusSessao, iniciarSessao, tickTimer } = useSessaoStore();
   const [loading, setLoading] = useState(true);
 
+  // 1. Carregar catálogo centralizado de exercícios e inicializar motor de sessão
   useEffect(() => {
-    async function carregarCatalog() {
+    async function inicializarMotorSessao() {
       try {
         const catalogo = await listarExercicios();
-        const map: Record<string, Exercicio> = {};
-        catalogo.forEach(ex => {
-          map[ex.id] = ex;
-        });
-        setExerciciosMap(map);
+        
+        if (sessaoDoDia) {
+          iniciarSessao(sessaoDoDia, catalogo, modoExpress);
+        }
       } catch (err) {
-        console.error('Erro no catálogo:', err);
+        console.error('Falha ao inicializar o motor de execução:', err);
       } finally {
         setLoading(false);
       }
     }
-    carregarCatalog();
-  }, []);
+    inicializarMotorSessao();
+  }, [sessaoDoDia, modoExpress]);
 
+  // 2. Configura ticker global de 1 segundo para a duração do treino e cronômetro de descanso
+  useEffect(() => {
+    if (statusSessao === 'idle' || statusSessao === 'finalizada') return;
+
+    const intervalId = setInterval(() => {
+      // Executa tick na store Zustand na thread JS
+      useSessaoStore.getState().tickTimer();
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [statusSessao]);
+
+  // Se a sessão do dia não existir no store de programas, convida para voltar à Home
   if (!sessaoDoDia) {
     return (
       <Container className="p-6 justify-center items-center gap-4">
-        <Texto variant="h2">Sessão Inexistente</Texto>
-        <Botao variant="primary" onPress={() => router.replace('/')}>
+        <Texto variant="h2" className="text-center font-bold">Nenhum Treino Agendado</Texto>
+        <Texto variant="body" color="muted" className="text-center">
+          Inicie um programa de treino ou configure sua agenda para começar.
+        </Texto>
+        <Botao variant="primary" size="lg" onPress={() => router.replace('/')}>
           Voltar para Home
         </Botao>
       </Container>
     );
   }
 
-  // Se modoExpress estiver ativo, condensa dinamicamente a sessão!
-  const sessaoProcessada = modoExpress ? gerarSessaoExpress(sessaoDoDia) : sessaoDoDia;
-  const exerciciosPrescritos = sessaoProcessada.exercicios_prescritos || sessaoProcessada.exercicios || [];
-
-  const handleConcluirTreino = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    AlertFinished();
-  };
-
-  const AlertFinished = () => {
-    // Simula a conclusão e o acréscimo de XP na Fase 5/6
-    router.replace('/');
-  };
-
   return (
-    <Container>
-      {/* Header Row */}
-      <View className="flex-row items-center justify-between px-6 py-4 border-b border-border-subtle bg-elevated">
-        <Pressable 
-          onPress={() => router.back()} 
-          className="p-2 -ml-2"
-        >
-          <ArrowLeft size={20} color={tokens.fg.primary} />
-        </Pressable>
-        <Texto variant="h2" className="flex-1 text-center pr-6">Executando Treino</Texto>
-      </View>
+    <Container className="bg-canvas">
+      {/* Maximum Immersion StatusBar dark styling */}
+      <StatusBar style="dark" hidden={false} translucent />
 
       {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color={tokens.accent.bronze} />
+          <Texto variant="caption" color="muted" className="mt-3">
+            Carregando inteligência mecânica...
+          </Texto>
         </View>
       ) : (
-        <ScrollView 
-          contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: 140 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Sessão Title */}
-          <View className="gap-1 mb-2">
-            <Texto variant="h1">{sessaoProcessada.nome}</Texto>
-            <Texto variant="body" color="secondary">
-              {sessaoProcessada.descricao}
-            </Texto>
-          </View>
+        <View className="flex-1">
+          {/* A. Topo: Indicador minúsculo e menu de opções */}
+          <HeaderProgresso />
 
-          {/* Express Badge Indicator */}
-          {modoExpress ? (
-            <Card 
-              padding="sm" 
-              className="flex-row items-center gap-3 border border-accent-gold/30 bg-accent-gold/10 rounded-md"
-            >
-              <Lightning size={22} color={tokens.accent.gold} weight="fill" />
-              <View className="flex-1">
-                <Texto variant="bodyBold" color="gold" className="text-[14px]">Modo Express Ativo</Texto>
-                <Texto variant="caption" color="muted">
-                  Treino comprimido para 3 exercícios chave de alta tensão mecânica.
-                </Texto>
-              </View>
-            </Card>
-          ) : (
-            <Card 
-              padding="sm" 
-              className="flex-row items-center gap-3 border border-border-subtle bg-elevated rounded-md"
-            >
-              <ShieldCheck size={22} color={tokens.accent.bronze} weight="light" />
-              <View className="flex-1">
-                <Texto variant="bodyBold" className="text-[14px]">Modo Completo Científico</Texto>
-                <Texto variant="caption" color="muted">
-                  Volume de séries completo visando o máximo estímulo hipertrófico.
-                </Texto>
-              </View>
-            </Card>
-          )}
+          {/* B. Área Central: Animação Loop Lottie ou Placeholder bronze */}
+          <VisualExercicio />
 
-          {/* Prescribed List */}
-          <Texto variant="captionBold" color="secondary" className="px-1 mt-2">
-            LISTA DE EXERCÍCIOS ({exerciciosPrescritos.length})
-          </Texto>
+          {/* C. Área de Instruções da Série: Reps, Cadência e RIR Alvo */}
+          <InfoSerie />
 
-          {exerciciosPrescritos.map((ep, index) => {
-            const exercicioDetalhes = exerciciosMap[ep.exercicio_id];
-            const nomeExercicio = exercicioDetalhes?.nome || ep.exercicio_id.replace(/_/g, ' ');
+          {/* D. Frase Científica Inline: Carrossel rotativo discreto */}
+          <FraseCientificaInline />
 
-            return (
-              <Card 
-                key={ep.id || index.toString()} 
-                padding="md" 
-                className="border border-border-subtle rounded-md bg-elevated"
-              >
-                <View className="flex-row items-center justify-between mb-2">
-                  <View className="flex-row items-center gap-2">
-                    <View className="w-8 h-8 rounded-full bg-accent-bronze/10 justify-center items-center">
-                      <Texto variant="bodyBold" color="bronze" className="text-[13px]">{index + 1}</Texto>
-                    </View>
-                    <Texto variant="bodyBold">{nomeExercicio}</Texto>
-                  </View>
-                  
-                  {ep.substituido_por_restricao && (
-                    <View className="px-2 py-0.5 rounded-xs bg-feedback-success/10 border border-feedback-success/20">
-                      <Texto variant="caption" color="success" className="text-[10px] font-semibold">🛡️ Adaptado</Texto>
-                    </View>
-                  )}
-                </View>
+          {/* E/F. Botão de Ação (CONCLUÍ SÉRIE) ou Timer de Descanso */}
+          {statusSessao === 'executando' && <BotaoConcluirSerie />}
+          {statusSessao === 'descansando' && <TimerDescanso />}
 
-                <Texto variant="caption" color="secondary" className="mb-2">
-                  Prescrição: {ep.series_alvo} séries × {ep.reps_alvo_min}-{ep.reps_alvo_max} reps · RIR {ep.rir_alvo} · {ep.descanso_segundos}s descanso
-                </Texto>
+          {/* G. Overlay de Transição Curta de 3s entre Exercícios */}
+          <TransicaoExercicio />
 
-                {ep.notas && (
-                  <View className="bg-canvas border border-border-subtle/50 p-2.5 rounded-sm">
-                    <Texto variant="caption" color="muted" className="text-[12px] leading-[16px] italic">
-                      {ep.notes || ep.notas}
-                    </Texto>
-                  </View>
-                )}
-              </Card>
-            );
-          })}
-          
-          <View className="bg-elevated/40 border border-border-subtle/50 p-4 rounded-md items-center gap-2 mt-4">
-            <Texto variant="h3" color="bronze">Fase 5: Execução Série a Série</Texto>
-            <Texto variant="caption" color="muted" className="text-center">
-              Na próxima fase implementaremos o timer interséries de alta precisão, o metrônomo de cadência e a gravação de séries concluídas no banco.
-            </Texto>
-          </View>
-        </ScrollView>
+          {/* H. Tela de Finalizado / Celebração imersiva */}
+          <CelebracaoFinalSessao />
+        </View>
       )}
-
-      {/* Floating Sticky Footer */}
-      <View 
-        className="absolute bottom-0 left-0 right-0 p-6 border-t border-border-subtle bg-overlay"
-        style={{ backgroundColor: tokens.bg.overlay }}
-      >
-        <Botao 
-          variant="primary" 
-          size="lg"
-          onPress={handleConcluirTreino}
-          className="w-full flex-row gap-2"
-        >
-          <CheckCircle size={20} color={tokens.fg.inverse} weight="bold" />
-          <Texto variant="bodyBold" color="inverse">Simular Conclusão de Treino</Texto>
-        </Botao>
-      </View>
     </Container>
   );
 }
