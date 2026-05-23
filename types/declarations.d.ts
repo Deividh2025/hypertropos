@@ -1,3 +1,5 @@
+/// <reference types="nativewind/types" />
+
 /**
  * Declarações de tipos para imports que o TypeScript não resolve nativamente.
  *
