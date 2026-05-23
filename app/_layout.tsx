@@ -25,6 +25,7 @@ import '../global.css'
 import { useColorScheme } from '@/components/useColorScheme'
 import { initializeSchema } from '../db/schema-local'
 import { useSyncEngine } from '../db/sync-engine'
+import { usePerfilStore } from '../stores/perfilStore'
 import { motorAudio } from '../lib/motor-audio'
 import { ErrorBoundaryProps } from 'expo-router'
 import { View, Pressable } from 'react-native'
@@ -103,10 +104,6 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (error) throw error
-    
-    // Inicializa o banco de dados local em background e o motor de áudio
-    initializeSchema().catch(console.error);
-    motorAudio.inicializar().catch(console.error);
   }, [error])
 
   useEffect(() => {
@@ -124,46 +121,53 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme()
-  const router = useRouter()
+  const { perfil, carregarPerfil, isLoading: carregandoPerfil } = usePerfilStore()
   const [isReady, setIsReady] = useState(false)
   
   // Inicia o engine de sincronização offline-first
   useSyncEngine()
 
   useEffect(() => {
-    async function checkOnboarding() {
+    async function inicializarApp() {
       try {
-        const complete = await AsyncStorage.getItem('onboarding_complete')
-        if (complete !== 'true') {
-          // Usa setTimeout leve para garantir que o root layout montou e o router está pronto
-          setTimeout(() => {
-            router.replace('/onboarding')
-          }, 100)
-        }
+        // Inicializa o banco de dados local SQLite e o motor de áudio
+        await initializeSchema()
+        await motorAudio.inicializar()
+        // Carrega o perfil do usuário
+        await carregarPerfil()
       } catch (err) {
-        console.error('Error checking onboarding status', err)
+        console.error('Erro ao inicializar app:', err)
       } finally {
         setIsReady(true)
       }
     }
     
-    checkOnboarding()
+    inicializarApp()
   }, [])
 
-  if (!isReady) {
-    return null; // Pode retornar null ou uma view de loading simplificada
+  if (!isReady || carregandoPerfil) {
+    return null; // Carregamento seguro para evitar qualquer flash ou vazamento
   }
+
+  const onboardingComplete = perfil !== null
 
   return (
     // ThemeProvider aplica o tema claro/escuro do sistema ao Expo Router
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <View style={{ flex: 1 }}>
         <IndicadorConexao />
-        <Stack>
-          {/* (tabs) é a rota principal — sem header próprio, gerenciado pelo Tabs */}
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack screenOptions={{ headerShown: false }}>
+          {!onboardingComplete ? (
+            // Roteamento condicional seguro: se o onboarding não estiver completo,
+            // apenas o Stack do onboarding existe no roteador.
+            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          ) : (
+            // Apenas quando o onboarding for concluído é que o app principal é exposto
+            <>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            </>
+          )}
         </Stack>
       </View>
     </ThemeProvider>

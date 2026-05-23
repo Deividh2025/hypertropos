@@ -42,7 +42,8 @@ interface GamificacaoState {
   desempilharCelebracao: () => void;
   verificarNecessidadeFreeze: () => Promise<void>;
   usarFreeze: () => Promise<void>;
-  ignorarFreeze: () => void;
+  ignorarFreeze: () => Promise<void>;
+  adicionarCelebracao: (celebracao: CelebrationEvent) => void;
 }
 
 export const useGamificacaoStore = create<GamificacaoState>((set, get) => ({
@@ -264,5 +265,13 @@ export const useGamificacaoStore = create<GamificacaoState>((set, get) => ({
     } catch (err) {
       console.error('Erro ao ignorar freeze:', err);
     }
+  },
+  adicionarCelebracao: (celebracao) => {
+    const { filaCelebracoes } = get();
+    const novaFila = [...filaCelebracoes, celebracao];
+    set({
+      filaCelebracoes: novaFila,
+      celebracaoAtiva: get().celebracaoAtiva || novaFila[0],
+    });
   },
 }));

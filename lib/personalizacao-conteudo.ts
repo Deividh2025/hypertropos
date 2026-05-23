@@ -28,7 +28,11 @@ export function obterTagsInteresseDoPerfil(perfil: Perfil): string[] {
 
   if (Array.isArray(restricoes)) {
     for (const rest of restricoes) {
-      const regiao = (rest.regiao || rest || '').toLowerCase();
+      if (!rest) continue;
+      const regiao = (typeof rest === 'string'
+        ? rest
+        : rest.regiao || rest.articulacao || ''
+      ).toLowerCase();
       if (regiao.includes('joelho')) {
         tagsInteresse.push('predisposicao_joelho');
       }

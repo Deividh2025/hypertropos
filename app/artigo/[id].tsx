@@ -19,6 +19,7 @@ import { enqueueChange } from '../../db/sync-engine';
 import { useGamificacaoStore } from '../../stores/gamificacaoStore';
 import { CATALOGO_CONQUISTAS } from '../../constants/conquistas';
 import { ArtigoCientifico } from '../../types/artigo';
+import { CelebracaoConquista } from '../../components/feedback/CelebracaoConquista';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -124,11 +125,12 @@ export default function ArtigoLeitorScreen() {
         });
         
         // Empilha celebração dopaminérgica na Zustand Store
-        // @ts-ignore
-        gamificacaoStore.filaCelebracoes.push({ type: 'conquista', conquista: { ...conquistaInfo, desbloqueada_em: dataIso } });
+        gamificacaoStore.adicionarCelebracao({
+          type: 'conquista',
+          conquista: { ...conquistaInfo, desbloqueada_em: dataIso }
+        });
         
         // Incrementa o XP do usuário na Zustand Store e no banco
-        // @ts-ignore
         await executarQuery(`
           UPDATE gamificacao SET xp_total = xp_total + ? WHERE id = 'default'
         `, [conquistaInfo.xp_recompensa]);
@@ -155,13 +157,6 @@ export default function ArtigoLeitorScreen() {
       
       // Inicializa gamificação na store para sincronizar o progresso dopaminérgico visual do usuário
       await gamificacaoStore.inicializarGamificacao();
-      
-      // Se houver conquistas novas na fila, dispara a visualização
-      if (gamificacaoStore.filaCelebracoes.length > 0) {
-        useGamificacaoStore.setState({
-          celebracaoAtiva: gamificacaoStore.filaCelebracoes[0]
-        });
-      }
       
     } catch (error) {
       console.error('Erro ao marcar artigo como lido ou verificar conquistas:', error);
@@ -390,6 +385,14 @@ export default function ArtigoLeitorScreen() {
           </Botao>
         )}
       </View>
+
+      {/* OVERLAY DE CELEBRAÇÃO DE CONQUISTA */}
+      {gamificacaoStore.celebracaoAtiva && gamificacaoStore.celebracaoAtiva.type === 'conquista' && (
+        <CelebracaoConquista
+          conquista={gamificacaoStore.celebracaoAtiva.conquista}
+          aoFechar={gamificacaoStore.desempilharCelebracao}
+        />
+      )}
     </Container>
   );
 }
