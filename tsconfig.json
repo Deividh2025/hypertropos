@@ -8,20 +8,37 @@
     // TypeScript 6.0 deprecou baseUrl em favor de importAttributes — silenciamos durante transição
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/components/*": ["components/*"],
-      "@/lib/*": ["lib/*"],
-      "@/db/*": ["db/*"],
-      "@/hooks/*": ["hooks/*"],
-      "@/stores/*": ["stores/*"],
-      "@/types/*": ["types/*"],
-      "@/constants/*": ["constants/*"],
-      "@/assets/*": ["assets/*"]
+      "@/components/*": [
+        "components/*"
+      ],
+      "@/lib/*": [
+        "lib/*"
+      ],
+      "@/db/*": [
+        "db/*"
+      ],
+      "@/hooks/*": [
+        "hooks/*"
+      ],
+      "@/stores/*": [
+        "stores/*"
+      ],
+      "@/types/*": [
+        "types/*"
+      ],
+      "@/constants/*": [
+        "constants/*"
+      ],
+      "@/assets/*": [
+        "assets/*"
+      ]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
   ]
 }

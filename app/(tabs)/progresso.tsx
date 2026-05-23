@@ -38,7 +38,7 @@ import {
   ClockCounterClockwise,
 } from 'phosphor-react-native';
 import { SCULPTED_EASING } from '../../constants/easing';
-import { estatisticasGerais } from '../../db/queries/agregacoes';
+import { estatisticasGerais, volumeSemanaPorGrupo } from '../../db/queries/agregacoes';
 import {
   Skeleton,
   SkeletonKPIs,
@@ -61,6 +61,84 @@ interface KPIsData {
   conquistas_desbloqueadas: number;
 }
 
+const BarraProgressoVolume = React.memo(({ grupo, series, alvo, tokens }: {
+  grupo: string;
+  series: number;
+  alvo: number;
+  tokens: any;
+}) => {
+  const percentual = alvo > 0 ? Math.round((series / alvo) * 100) : 0;
+  const percentualLimitado = Math.min(100, percentual);
+
+  const progressWidth = useSharedValue(0);
+
+  useEffect(() => {
+    progressWidth.value = withTiming(percentualLimitado, {
+      duration: 800,
+      easing: SCULPTED_EASING,
+    });
+  }, [percentualLimitado, progressWidth]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      width: `${progressWidth.value}%`,
+    };
+  });
+
+  let corFill = tokens.feedback.error;
+  if (percentual >= 100) {
+    corFill = tokens.feedback.success;
+  } else if (percentual >= 50) {
+    corFill = tokens.accent.gold;
+  }
+
+  const obterNomeGrupo = (g: string) => {
+    switch (g) {
+      case 'peito': return 'Peito';
+      case 'costas': return 'Costas';
+      case 'ombros': return 'Ombros';
+      case 'triceps': return 'Tríceps';
+      case 'biceps': return 'Bíceps';
+      case 'quadriceps': return 'Quadríceps';
+      case 'posterior': return 'Posterior';
+      case 'gluteo': return 'Glúteo';
+      case 'panturrilha': return 'Panturrilha';
+      case 'core': return 'Core';
+      default: return g.charAt(0).toUpperCase() + g.slice(1);
+    }
+  };
+
+  return (
+    <View className="mb-4.5">
+      <View className="flex-row justify-between items-center mb-1.5">
+        <Texto variant="bodyBold" className="text-[13px] tracking-wide">
+          {obterNomeGrupo(grupo)}
+        </Texto>
+        <View className="flex-row items-center gap-1.5">
+          <Texto variant="captionBold" color={percentual >= 100 ? 'success' : 'secondary'} className="text-[12px]">
+            {series} / {alvo}
+          </Texto>
+          <Texto variant="caption" color="muted" className="text-[11px]">
+            séries ({percentual}%)
+          </Texto>
+          {percentual >= 100 && (
+            <Icons.CheckCircle size={14} color={tokens.feedback.success} weight="fill" />
+          )}
+        </View>
+      </View>
+      <View 
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', height: 8 }} 
+        className="w-full rounded-full overflow-hidden"
+      >
+        <Animated.View 
+          style={[{ backgroundColor: corFill, height: '100%' }, animatedStyle]} 
+          className="rounded-full"
+        />
+      </View>
+    </View>
+  );
+});
+
 export default function ProgressoScreen() {
   const { tokens } = useTheme();
   const { width } = useWindowDimensions();
@@ -77,6 +155,10 @@ export default function ProgressoScreen() {
     streak_maximo: 0,
     conquistas_desbloqueadas: 0,
   });
+
+  const [semanaOffset, setSemanaOffset] = useState<number>(0);
+  const [volumeData, setVolumeData] = useState<{ grupo: string; series_efetivas: number; alvo: number }[]>([]);
+  const [carregandoVolume, setCarregandoVolume] = useState<boolean>(true);
 
   // Conquista selecionada para o bottom sheet
   const [conquistaSelecionada, setConquistaSelecionada] = useState<Conquista | null>(null);
@@ -102,15 +184,36 @@ export default function ProgressoScreen() {
     }
   }, [inicializarGamificacao]);
 
+  const carregarVolume = useCallback(async (offset: number) => {
+    setCarregandoVolume(true);
+    try {
+      const data = await volumeSemanaPorGrupo(offset);
+      setVolumeData(data);
+    } catch (error) {
+      console.error('Erro ao carregar volume:', error);
+    } finally {
+      setCarregandoVolume(false);
+    }
+  }, []);
+
   useEffect(() => {
     carregarDados();
   }, [carregarDados]);
 
+  useEffect(() => {
+    if (abaAtiva === 'volume') {
+      carregarVolume(semanaOffset);
+    }
+  }, [abaAtiva, semanaOffset, carregarVolume]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await carregarDados();
+    await Promise.all([
+      carregarDados(),
+      abaAtiva === 'volume' ? carregarVolume(semanaOffset) : Promise.resolve(),
+    ]);
     setRefreshing(false);
-  }, [carregarDados]);
+  }, [carregarDados, abaAtiva, semanaOffset, carregarVolume]);
 
   // Abre e fecha detalhes da conquista
   const abrirDetalhes = (conquista: Conquista) => {
@@ -150,14 +253,53 @@ export default function ProgressoScreen() {
         );
 
       case 'volume':
-        if (isCarregando) return <SkeletonVolume />;
+        if (carregandoVolume) return <SkeletonVolume />;
         return (
-          <Animated.View entering={FadeIn.duration(200)} className="flex-1 p-6 items-center justify-center">
-            <ChartBar size={64} color={tokens.accent.bronze} weight="light" />
-            <Texto variant="h2" className="mt-4 font-bold">Volume Semanal</Texto>
-            <Texto variant="body" color="secondary" className="text-center mt-2 max-w-[280px]">
-              Gráfico de barras horizontais com metas dinâmicas por grupo muscular e seletor de período.
-            </Texto>
+          <Animated.View entering={FadeIn.duration(200)} className="flex-1 px-6 pt-2">
+            {/* Seletor de Período Horizontal */}
+            <View 
+              style={{ borderColor: tokens.border.subtle, backgroundColor: `${tokens.bg.elevated}50` }} 
+              className="flex-row p-1 rounded-md border mb-5"
+            >
+              {[
+                { label: 'Esta Semana', offset: 0 },
+                { label: 'Semana Passada', offset: -1 },
+                { label: '2 Semanas Atrás', offset: -2 },
+              ].map((periodo) => {
+                const ativo = semanaOffset === periodo.offset;
+                return (
+                  <Pressable
+                    key={periodo.offset}
+                    onPress={() => setSemanaOffset(periodo.offset)}
+                    style={{
+                      backgroundColor: ativo ? tokens.bg.elevated : 'transparent',
+                    }}
+                    className="flex-1 py-2 rounded-sm items-center justify-center min-h-[40px]"
+                  >
+                    <Texto
+                      variant="captionBold"
+                      color={ativo ? 'bronze' : 'muted'}
+                      className="text-[12px]"
+                    >
+                      {periodo.label}
+                    </Texto>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            {/* Listagem de Volumes por Grupo Muscular */}
+            <View className="mb-6">
+              {volumeData.map((item) => (
+                <BarraProgressoVolume
+                  key={item.grupo}
+                  grupo={item.grupo}
+                  series={item.series_efetivas}
+                  alvo={item.alvo}
+                  tokens={tokens}
+                />
+              ))}
+            </View>
           </Animated.View>
         );
 
