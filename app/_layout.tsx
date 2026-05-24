@@ -124,8 +124,8 @@ function RootLayoutNav() {
   const { perfil, carregarPerfil, isLoading: carregandoPerfil } = usePerfilStore()
   const [isReady, setIsReady] = useState(false)
   
-  // Inicia o engine de sincronização offline-first
-  useSyncEngine()
+  // Inicia o engine de sincronização offline-first apenas quando o app estiver inicializado e pronto
+  useSyncEngine(isReady && !carregandoPerfil)
 
   useEffect(() => {
     async function inicializarApp() {

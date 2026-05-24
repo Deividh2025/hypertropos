@@ -92,8 +92,10 @@ export async function processSyncQueue() {
   }
 }
 
-export function useSyncEngine() {
+export function useSyncEngine(enabled: boolean = true) {
   useEffect(() => {
+    if (!enabled) return;
+
     // Processa na inicialização
     processSyncQueue();
     
@@ -115,5 +117,5 @@ export function useSyncEngine() {
       clearInterval(intervalId);
       subscription.remove();
     };
-  }, []);
+  }, [enabled]);
 }
