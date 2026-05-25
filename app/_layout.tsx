@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler'
 import { useFonts } from 'expo-font'
 import {
   Fraunces_400Regular,
@@ -103,16 +104,18 @@ export default function RootLayout() {
   })
 
   useEffect(() => {
-    if (error) throw error
+    if (error) {
+      console.error('Erro ao carregar fontes do Google Fonts:', error)
+    }
   }, [error])
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded || error) {
       SplashScreen.hideAsync()
     }
-  }, [loaded])
+  }, [loaded, error])
 
-  if (!loaded) {
+  if (!loaded && !error) {
     return null
   }
 
