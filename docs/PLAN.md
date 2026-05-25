@@ -1,179 +1,169 @@
-# Plano de Ação - Registro e Sincronização 24h (sync-24h)
+# Plano de Reparo: Falha de Inicialização do Microsoft Excel (Erro 1060 / Sequestro de IFEO pelo CCleaner)
 
-> **Plano Mestre de Documentação, Validação e Sincronização do Trabalho das Últimas 24h**
-> Este documento detalha a coordenação entre os agentes para auditar, documentar, validar e sincronizar com segurança as alterações massivas realizadas no projeto Hypertropos.
+🤖 **Applying knowledge of `@[project-planner]`...**
 
----
-
-## 📋 Overview
-
-Nas últimas 24 horas, o projeto Hypertropos (um aplicativo de hipertrofia offline-first baseado em Expo) recebeu atualizações significativas em múltiplas frentes de desenvolvimento:
-1. **Onboarding & Experiência de Usuário**: Refinamento do fluxo de onboarding de 14 telas, silhuetas interativas em SVG e telas de transição de tiers.
-2. **Execução de Treinos & Gamificação**: UI de execução de séries passo a passo, motor de comemoração, partículas, haptics, keep-awake, transições de conquistas e celebrações.
-3. **Mecanismo Científico & Artigos**: Integração de 18 artigos científicos originais de biomecânica e nutrição na pasta `content/artigos/` e vinculações nas migrações do Supabase.
-4. **Infraestrutura de Dados Offline & Hooks**: Migrações de banco de dados local para nutrição, notificações e artigos, além de hooks customizados para evolução de peso, cálculo proteico e controle de sons.
-
-Este plano fornece um roteiro estruturado para que os agentes **Explorer Agent**, **Documentation Writer**, **Test Engineer** e **DevOps Engineer** trabalhem em harmonia para consolidar essas alterações, realizar testes de integridade e subir os commits para a branch principal (`main`).
-
-> [!IMPORTANT]
-> **Regra de OS (Windows):** Como o ambiente do usuário é Windows com PowerShell, todos os comandos executados pelos agentes devem seguir estritamente as convenções de sintaxe do PowerShell.
-> **Regra de Versão do Expo:** Qualquer verificação ou alteração de código subsequente deve estar em estrita conformidade com a documentação do Expo v56.0.0.
+Este documento detalha o plano de diagnóstico, correção e verificação manual para resolver a falha crítica na inicialização do Microsoft Excel e outros aplicativos afetados devido a redirecionamentos incorretos de **Image File Execution Options (IFEO)** criados pelo recurso "Sleep Mode" do CCleaner.
 
 ---
 
-## 🎯 Project Type
+## 1. Causa Raiz (Root Cause)
 
-- **Tipo de Projeto:** `MOBILE` (React Native com Expo Router, NativeWind, SQLite local via Expo SQLite/Kysely/Prisma e Supabase no backend).
-- **Agente Principal:** `mobile-developer` (para lógica e interface mobile).
-- **Agente de Planejamento:** `project-planner` (coordenação inicial).
-- **Agente de Documentação:** `documentation-writer` (elaboração de relatórios).
+O recurso **Sleep Mode** do CCleaner otimiza o desempenho do sistema colocando aplicativos em segundo plano em "estado de suspensão". Tecnicamente, ele faz isso configurando redirecionamentos no registro do Windows chamados **Image File Execution Options (IFEO)**.
 
----
+Para cada aplicativo suspenso, o CCleaner altera a chave de registro:
+`HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\<nome_do_app>.exe`
 
-## 🏆 Success Criteria
+Definindo o valor `Debugger` como:
+`"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"`
 
-O projeto será considerado sincronizado e completo quando:
-- [ ] Um relatório técnico detalhado (`docs/RELATORIO_24H.md`) for escrito em português detalhando todas as alterações e artigos científicos indexados.
-- [ ] As validações de lint e type-checking do TypeScript passarem com zero erros estruturais.
-- [ ] Os testes unitários associados às lógicas adicionadas (como `tests/calculadora-proteina.test.ts`) executarem com sucesso.
-- [ ] O script de integridade e auditoria de segurança `.agent/scripts/checklist.py` retornar sucesso sem vulnerabilidades ou vazamentos críticos de segredos.
-- [ ] Todas as alterações (modificadas e untracked) forem adicionadas ao Git, commitadas com mensagens semânticas claras e enviadas de forma segura ao repositório remoto na branch `main`.
+### O Problema:
+Quando o usuário tenta iniciar o aplicativo (ex: `excel.exe`), o Windows tenta executar o depurador associado (`CCleanerReactivator.exe`). Se o CCleaner estiver corrompido, desinstalado incorretamente, ou se o seu serviço reativador estiver ausente/desativado, o Windows falha imediatamente ao tentar carregar o executável do "depurador". Isso resulta no **Exit Code 1060** (`ERROR_SERVICE_DOES_NOT_EXIST` / "O serviço especificado não existe como serviço instalado").
 
 ---
 
-## 🛠️ Tech Stack
+## 2. Aplicativos Afetados Identificados
 
-A arquitetura do projeto utiliza a seguinte pilha tecnológica para as frentes alteradas:
-- **Framework Mobile:** Expo v56.0.0 (React Native, Expo Router)
-- **Estilização:** Tailwind CSS v4 (NativeWind) com tema customizado (Zero violetas/roxos, respeitando a *Purple Ban*)
-- **Banco de Dados Local:** SQLite gerido de forma offline-first com queries SQL e migrações locais estruturadas
-- **Backend / Sementes:** Supabase (PostgreSQL), migrations de dados e seeds científicos
-- **Motor de Áudio e Feedback:** Expo Audio & Expo Haptics para imersão no treino
+Com base em varreduras profundas do registro, o "Sleep Mode" do CCleaner sequestrou o fluxo de inicialização dos seguintes executáveis:
 
----
-
-## 📁 File Structure (Principais Áreas Afetadas)
-
-```plaintext
-hypertropos/
-├── app/
-│   ├── (tabs)/                  # Telas de navegação tabulada (Home, Ciência, Nutrição, Progresso)
-│   ├── onboarding/              # Telas do fluxo de onboarding de 14 etapas (Gênero, Horário, Nível)
-│   ├── treino/                  # Telas de execução ativa de treino (Execução, Pre-Treino, Semana)
-│   ├── artigo/[id].tsx          # Visualização dinâmica de artigos científicos (Nova!)
-│   ├── exercicio/[id].tsx       # Visualização de detalhes de exercícios (Nova!)
-│   └── suplemento/              # Visualização de detalhes de suplementos (Nova!)
-├── assets/
-│   └── sounds/                  # Arquivos de som (.wav) para feedback sonoro (Novos!)
-├── components/
-│   ├── feedback/                # Animações de conquista e transição de tier (CelebracaoConquista, TransicaoTier)
-│   ├── silhueta/                # Elementos visuais em SVG para evolução corporal (SilhuetaHome, SilhuetaProgresso)
-│   ├── treino/                  # Componentes de execução (BotaoConcluirSerie, HeaderProgresso, BotaoMusica)
-│   ├── nutricao/                # Componentes para a tela de nutrição (Novos!)
-│   └── ui/                      # Esqueletos (Skeletons) e indicadores (IndicadorConexao)
-├── content/
-│   └── artigos/                 # 18 Artigos científicos de hipertrofia em Markdown (Novos!)
-├── db/
-│   ├── migrations/local/        # Migrações offline do banco SQLite (Nutrition, SecaoCientifica)
-│   ├── queries/                 # Consultas tipadas para treinos, suplementos, artigos e programas
-│   └── schema-local.ts          # Schema do banco de dados SQLite local
-├── hooks/                       # React Hooks customizados (useEvolucaoPeso, useMetaProteina, useSound, etc.)
-├── lib/                         # Biblioteca de lógica pura (Calculadora de proteína, motor de áudio, personalização)
-├── stores/                      # Stores de estado global do Zustand (gamificacaoStore, programaStore, sessaoStore)
-├── supabase/
-│   ├── migrations/              # Migrações do Supabase para seed de dados científicos
-│   └── SEED_REPORT.md           # Relatório das sementes aplicadas
-└── tests/                       # Testes de unidade e lógica de estados (sessaoStore, calculadora-proteina)
-```
+| Aplicativo | Executável | Caminho do Depurador Configurado (Sequestrado) |
+| :--- | :--- | :--- |
+| **Microsoft Excel** | `excel.exe` | `"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"` |
+| **Microsoft Word** | `winword.exe` | `"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"` |
+| **Microsoft PowerPoint** | `powerpnt.exe` | `"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"` |
+| **Microsoft Outlook** | `outlook.exe` | `"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"` |
+| **Google Chrome** | `chrome.exe` | `"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"` |
+| **Opera Browser** | `opera.exe` | `"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"` |
+| **TeamViewer** | `teamviewer.exe` | `"C:\Program Files\Piriform\CCleaner 7\CCleanerReactivator.exe"` |
 
 ---
 
-## 📋 Task Breakdown
+## 3. Script de Reparo Proposto (`fix_office_ccleaner.ps1`)
 
-A sincronização será executada de forma serial e coordenada através de 4 tarefas principais:
+O script abaixo foi desenvolvido em PowerShell para automatizar a limpeza do registro com total segurança.
 
-### 🎯 Task 1: Análise Detalhada de Diffs (Discovery)
-- **ID da Tarefa:** `TSK-001`
-- **Agente Responsável:** `explorer-agent`
-- **Habilidades Associadas:** `clean-code`, `behavioral-modes`
-- **Prioridade:** `P0` (Bloqueador Geral)
-- **Dependências:** Nenhuma
-- **Descrição:** Analisar o diff completo das últimas 24 horas no Git (`git diff` das modificadas e listagem das `untracked`). O objetivo é compilar o escopo exato de tudo o que foi desenvolvido para garantir que nada seja esquecido no relatório técnico.
-- **INPUT:** Repositório local com modificações pendentes.
-- **OUTPUT:** Lista detalhada de todos os módulos modificados, novas telas, novos arquivos de som, migrações e lista exata dos 18 artigos adicionados.
-- **VERIFY:** Exibição da saída estruturada das mudanças mapeadas pelo Explorer.
-
----
-
-### 🎯 Task 2: Elaboração do Relatório Técnico
-- **ID da Tarefa:** `TSK-002`
-- **Agente Responsável:** `documentation-writer`
-- **Habilidades Associadas:** `documentation-templates`, `clean-code`
-- **Prioridade:** `P1`
-- **Dependências:** `TSK-001`
-- **Descrição:** Redigir o arquivo `docs/RELATORIO_24H.md` em português brasileiro. O relatório deve ser exaustivo e profissional, dividindo as atualizações por blocos funcionais, listando os arquivos criados/modificados, as migrações offline e online executadas, e a listagem temática detalhada dos 18 artigos científicos integrados ao app.
-- **INPUT:** Relatório de discovery gerado pela Task 1 e arquivos do repositório.
-- **OUTPUT:** Arquivo `docs/RELATORIO_24H.md` criado e salvo com estrutura impecável.
-- **VERIFY:** Comando `Test-Path docs/RELATORIO_24H.md` no PowerShell retornando `$true` e leitura visual de sua completude.
-
----
-
-### 🎯 Task 3: Verificação de Integridade e Testes
-- **ID da Tarefa:** `TSK-003`
-- **Agente Responsável:** `test-engineer` / `security-auditor`
-- **Habilidades Associadas:** `testing-patterns`, `vulnerability-scanner`, `lint-and-validate`
-- **Prioridade:** `P1`
-- **Dependências:** `TSK-002`
-- **Descrição:** Rodar a suíte de verificação integrada para garantir que as alterações maciças não quebraram a tipagem do TypeScript, lint ou testes de lógica.
-  1. Executar verificação de tipos e lint local.
-  2. Rodar os testes unitários com Jest (`npm test`).
-  3. Rodar o script `checklist.py` localizado na pasta `.agent/scripts/` para auditoria de vulnerabilidades e UX.
-- **INPUT:** Código fonte modificado.
-- **OUTPUT:** Relatório de testes executados com sucesso (zero erros de lint, zero falhas de testes, aprovação do scanner de segurança).
-- **VERIFY:** Logs de execução bem-sucedidos dos comandos `npm run lint`, `npx tsc --noEmit`, `npm test` e `python .agent/scripts/checklist.py .`.
-
----
-
-### 🎯 Task 4: Sincronização Segura do Git (Git Syncing)
-- **ID da Tarefa:** `TSK-004`
-- **Agente Responsável:** `devops-engineer`
-- **Habilidades Associadas:** `deployment-procedures`, `powershell-windows`
-- **Prioridade:** `P2`
-- **Dependências:** `TSK-003`
-- **Descrição:** Realizar o stage seguro das alterações, commit estruturado e semântico e upload para a branch remota.
-  1. Fazer `git add .` para incluir todas as modificações, novos hooks, migrações locais, sons e artigos científicos.
-  2. Criar commits semânticos separados ou um commit único massivo e bem documentado, como `feat: consolidado de atualizações das últimas 24h (onboarding, execucao, ciencia e offline DB)`.
-  3. Executar o push seguro para `origin main`.
-- **INPUT:** Repositório verificado e pronto para commit.
-- **OUTPUT:** Mudanças sincronizadas com sucesso no Git remoto.
-- **VERIFY:** Execução de `git status` retornando *working tree clean* e `git log -n 1` mostrando o commit de sincronização no topo.
-
----
-
-## 🏁 Phase X: Final Verification & Audit Checklist
-
-Esta fase final de auditoria deve ser executada de forma obrigatória antes de declarar a tarefa concluída por completo.
+> [!IMPORTANT]  
+> Este script **deve ser executado como Administrador**, pois modifica chaves sob `HKEY_LOCAL_MACHINE` (HKLM).
 
 ```powershell
-# 1. Executar o Checklist Geral do Agente
-python .agent/scripts/checklist.py .
+# fix_office_ccleaner.ps1
+# Script para remover sequestros de depuradores IFEO do CCleaner com segurança
 
-# 2. Rodar Testes de Unidade
-npm test
+# 1. Verificar privilégios de Administrador
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Error "Este script DEVE ser executado como Administrador! Abra o PowerShell como Administrador e tente novamente."
+    Exit
+}
 
-# 3. Rodar Type-Checking do TypeScript
-npx tsc --noEmit
+$ifeoPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options"
+# Varredura Dinâmica: encontrar TODAS as chaves que possuem depuradores do CCleaner
+$appsToClean = Get-ChildItem -Path $ifeoPath
+$backupDir = "$env:USERPROFILE\Desktop\IFEO_Backup"
+
+# 2. Criar diretório de backup na Área de Trabalho
+if (-not (Test-Path $backupDir)) {
+    New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
+}
+
+Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host " INICIANDO REPARO DE REGISTRO - REDIRECIONAMENTOS CCLEANER" -ForegroundColor Cyan
+Write-Host "==========================================================" -ForegroundColor Cyan
+Write-Host "Backup será salvo em: $backupDir`n" -ForegroundColor Yellow
+
+$rebootRequired = $false
+
+# 3. Processar executáveis
+foreach ($app in $appsToClean) {
+    $appName = $app.PSChildName
+    $appKeyPath = $app.PSPath
+    
+    # 3.1. Verificar se a própria chave tem Debugger do CCleaner (versões antigas)
+    $prop = Get-ItemProperty -Path $appKeyPath -Name "Debugger" -ErrorAction SilentlyContinue
+    if ($prop -and ($prop.Debugger -like "*CCleaner*")) {
+        Write-Host "Processando redirecionamento direto: $appName" -ForegroundColor White
+        Write-Host "  -> Depurador inválido encontrado: $($prop.Debugger)" -ForegroundColor Red
+        
+        # Backup
+        $backupFile = Join-Path $backupDir "$appName.reg"
+        reg export "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$appName" "$backupFile" /y | Out-Null
+        Write-Host "  -> Backup exportado para: $backupFile" -ForegroundColor Gray
+        
+        # Remover valor Debugger
+        Remove-ItemProperty -Path $appKeyPath -Name "Debugger" -Force
+        Write-Host "  -> VALOR 'Debugger' DIRETO REMOVIDO COM SUCESSO!" -ForegroundColor Green
+        $rebootRequired = $true
+        Write-Host "----------------------------------------------------------" -ForegroundColor Gray
+    }
+    
+    # 3.2. Verificar se subchaves têm Debugger do CCleaner (CCleaner v6/v7 com filtros)
+    $subkeys = Get-ChildItem -Path $appKeyPath -ErrorAction SilentlyContinue
+    foreach ($sub in $subkeys) {
+        $subProp = Get-ItemProperty -Path $sub.PSPath -Name "Debugger" -ErrorAction SilentlyContinue
+        if ($subProp -and ($subProp.Debugger -like "*CCleaner*")) {
+            Write-Host "Processando redirecionamento em subchave: $appName \$($sub.PSChildName)" -ForegroundColor White
+            Write-Host "  -> Depurador inválido encontrado: $($subProp.Debugger)" -ForegroundColor Red
+            
+            # Backup
+            $backupFile = Join-Path $backupDir "$($appName)_$($sub.PSChildName).reg"
+            reg export "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\$appName\$($sub.PSChildName)" "$backupFile" /y | Out-Null
+            Write-Host "  -> Backup exportado para: $backupFile" -ForegroundColor Gray
+            
+            # Remover subchave inteira
+            Remove-Item -Path $sub.PSPath -Force -Recurse
+            Write-Host "  -> SUBCHAVE DE REDIRECIONAMENTO REMOVIDA COM SUCESSO!" -ForegroundColor Green
+            $rebootRequired = $true
+            Write-Host "----------------------------------------------------------" -ForegroundColor Gray
+        }
+    }
+}
+
+if ($rebootRequired) {
+    Write-Host "`nReparo concluído com sucesso!" -ForegroundColor Green
+    Write-Host "Os redirecionamentos do CCleaner foram removidos." -ForegroundColor Green
+    Write-Host "Você já pode tentar abrir os aplicativos afetados (Excel, Word, Chrome, etc.)!" -ForegroundColor Green
+} else {
+    Write-Host "`nNenhum redirecionamento ativo do CCleaner foi encontrado." -ForegroundColor Yellow
+}
 ```
 
-### Critérios de Aceitação de Design & UX (Manual Check)
-- [ ] **Purple Ban:** Garantir que nenhuma alteração de UI ou componente de estilos do Tailwind utilize cores na paleta roxa/violeta.
-- [ ] **Acessibilidade:** Botões de execução de treino e conclusão de séries possuem áreas de toque com no mínimo `44px` de dimensão.
-- [ ] **Segurança:** O script `security_scan.py` foi executado com sucesso e não há nenhuma chave de API ou segredo exposto nos arquivos rastreados ou untracked.
+---
 
-### ✅ PHASE X COMPLETE
-- Lint & Typecheck: [ ] Pass
-- Unit Tests: [ ] Pass
-- Security Check: [ ] Pass
-- Audit Report: [ ] Created
-- Git Sincronizado: [ ] Success
-- Date: 2026-05-23
+## 4. Plano de Execução e Passos de Verificação Manual
+
+### Passo 1: Revisão e Aprovação do Plano
+* **Ação:** O usuário revisa este plano e concede permissão para prosseguir com a gravação e execução do script de reparo.
+
+### Passo 2: Execução do Reparo
+1. Criar o script `fix_office_ccleaner.ps1` em um diretório seguro de trabalho.
+2. Iniciar um console do PowerShell com privilégios elevados ("Executar como Administrador").
+3. Executar o script utilizando o comando:
+   ```powershell
+   Set-ExecutionPolicy Bypass -Scope Process -Force; .\fix_office_ccleaner.ps1
+   ```
+
+### Passo 3: Verificação Manual (Pós-Reparo)
+Para cada um dos aplicativos afetados, siga o roteiro de testes:
+
+1. **Microsoft Excel:**
+   * Tente abrir o Excel pelo menu Iniciar.
+   * Tente abrir o Excel via comando Executar (`Win + R` -> `excel.exe`).
+   * Tente abrir um arquivo `.xlsx` existente.
+   * *Resultado Esperado:* O Excel deve abrir imediatamente sem exibir erros ou fechar abruptamente.
+
+2. **Outros Aplicativos do Office (Word, PowerPoint, Outlook):**
+   * Execute os aplicativos através de seus respectivos atalhos.
+   * *Resultado Esperado:* Inicialização normal sem o erro de código 1060.
+
+3. **Navegadores e utilitários (Chrome, Opera, TeamViewer):**
+   * Inicialize os aplicativos.
+   * *Resultado Esperado:* Todos os navegadores devem carregar normalmente.
+
+---
+
+## 5. Estratégia de Rollback (Reversão de Segurança)
+
+Caso ocorra qualquer comportamento inesperado ou necessidade de desfazer o reparo:
+1. Navegue até a pasta `IFEO_Backup` criada na Área de Trabalho do usuário (`C:\Users\<Usuario>\Desktop\IFEO_Backup`).
+2. Dê um duplo clique nos arquivos `.reg` correspondentes aos aplicativos que deseja reverter (ex: `excel.exe.reg`).
+3. Confirme a mesclagem no Registro do Windows.
+4. O redirecionamento original do CCleaner será restaurado imediatamente.
