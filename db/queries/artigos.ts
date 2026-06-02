@@ -2,19 +2,16 @@ import { obterLinhas, obterLinha, executarQuery } from '../local-cache';
 import { enqueueChange } from '../sync-engine';
 import { supabase } from '../supabase-client';
 import { ArtigoCientifico, ArtigoLido } from '../../types/artigo';
+import artigosSeed from '../seeds/artigos.json';
 
-const ARTIGOS_MOCK_SEEDS = [
-  {
-    id: "01_o_que_constroi_musculo",
-    titulo: "O Que de Fato Constrói Músculo",
-    conteudo_markdown: "# O Que de Fato Constrói Músculo\n\nO músculo esquelético humano é um tecido altamente adaptável que responde a estímulos mecânicos específicos. Ao contrário do que a indústria do fitness frequentemente propaga, o músculo não reconhece o instrumento utilizado — seja ele uma barra de 100 kg, um halter emborrachado ou o peso do seu próprio corpo contra a gravidade.\n\n## 1. O Estímulo Central: Tensão Mecânica\n\nA literatura científica consolidada (Schoenfeld, 2016; Wackerhage, 2019) demonstra que o principal driver da hipertrofia muscular é a **tensão mecânica**. A tensão mecânica ocorre quando as fibras musculares são forçadas a produzir força enquanto são alongadas ou encurtadas. \n\nPara que essa tensão resulte em sinalização anabólica significativa (ativando vias como a mTORC1), as séries de exercícios precisam ser realizadas com um alto nível de esforço, aproximando-se da falha muscular concêntrica.\n\n## 2. Equivalência de Carga\n\nEstudos marcantes (como os de Schoenfeld et al.) confirmam que treinar com cargas leves (por exemplo, 30% de 1RM, típicas de exercícios calistênicos com muitas repetições) gera um ganho de massa muscular equivalente a treinar com cargas pesadas (80% de 1RM), desde que o esforço de cada série seja similar (ou seja, levando a série próximo do limite de falha técnica).\n\n> **Regra de Ouro:** A gravidade é o seu halter. A forma como você posiciona seu corpo no espaço determina a sobrecarga aplicada sobre cada articulação.\n\n## 3. Aplicação Prática\n\nSe você realizar flexões de braço com controle, cadência excêntrica intencional e amplitude completa, indo até restarem apenas 1 ou 2 repetições na reserva (RIR 1-2), o sinal hipertrófico gerado em seu peitoral e tríceps será indistinguível daquele gerado por um supino com barra na mesma intensidade relativa.",
-    tags: ["principios_fundamentais", "hipertrofia"],
-    tags_perfil_relacionadas: [],
-    tempo_leitura_min: 3,
-    data_publicacao: "2026-05-25",
-    referencias: ["schoenfeld_2016", "wackerhage_2019", "pedrosa_2022"]
-  }
-];
+function parseArtigoSeed(seed: any): ArtigoCientifico {
+  return {
+    ...seed,
+    tags: seed.tags || [],
+    tags_perfil_relacionadas: seed.tags_perfil_relacionadas || [],
+    referencias: seed.referencias || []
+  };
+}
 
 export async function listarArtigos(): Promise<ArtigoCientifico[]> {
   try {
@@ -57,7 +54,7 @@ export async function listarArtigos(): Promise<ArtigoCientifico[]> {
     // Fallback para sementes locais caso continue vazio (garantia offline absoluta antes do primeiro sync)
     if (linhas.length === 0) {
       console.log('Sem internet e sem cache local. Inicializando com sementes locais...');
-      for (const art of ARTIGOS_MOCK_SEEDS) {
+      for (const art of artigosSeed) {
         await executarQuery(`
           INSERT OR REPLACE INTO artigos_cientificos (
             id, titulo, conteudo_markdown, tags, tags_perfil_relacionadas, tempo_leitura_min, data_publicacao, referencias
@@ -79,7 +76,7 @@ export async function listarArtigos(): Promise<ArtigoCientifico[]> {
     return linhas.map(parseArtigo);
   } catch (error) {
     console.error('Erro ao listar artigos científicos:', error);
-    return [];
+    return (artigosSeed as any[]).map(parseArtigoSeed);
   }
 }
 

@@ -154,6 +154,30 @@ def main():
     print(f"Project: {project_path}")
     print(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("-"*60)
+
+    # Detect React Native / Expo
+    pkg_json = project_path / 'package.json'
+    if pkg_json.exists() and pkg_json.is_file():
+        try:
+            with open(pkg_json, 'r', encoding='utf-8') as f:
+                pkg_data = json.load(f)
+            deps = pkg_data.get('dependencies', {})
+            dev_deps = pkg_data.get('devDependencies', {})
+            if 'react-native' in deps or 'expo' in deps or 'react-native' in dev_deps or 'expo' in dev_deps:
+                print("\n[OK] React Native / Expo mobile project detected. HTML SEO check is not applicable.")
+                output = {
+                    "script": "seo_checker",
+                    "project": str(project_path),
+                    "files_checked": 0,
+                    "files_with_issues": 0,
+                    "issues_found": 0,
+                    "passed": True,
+                    "message": "React Native / Expo mobile project detected. SEO check skipped."
+                }
+                print("\n" + json.dumps(output, indent=2))
+                sys.exit(0)
+        except Exception as e:
+            print(f"Warning: Failed to read/parse package.json: {e}")
     
     # Find pages
     pages = find_pages(project_path)

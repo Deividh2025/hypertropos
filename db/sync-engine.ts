@@ -70,12 +70,11 @@ export async function processSyncQueue() {
         console.error(`Falha ao sincronizar item ${item.id}:`, error);
         item.tentativas += 1;
         
-        // Mantemos na fila para a próxima tentativa
-        // A lógica de delay do backoff exponencial (1,2,4,8,16, max 60s) 
-        // ditaria que não processaríamos esse item se `Date.now() < proximo_processamento`.
-        // Para simplicidade e robustez na V1, deixamos os retries ocorrerem em cada ciclo (30s)
-        // se o erro foi de rede.
-        failedItems.push(item);
+        if (item.tentativas < 10) {
+          failedItems.push(item);
+        } else {
+          console.warn(`Descartando item ${item.id} da tabela ${item.tabela} após 10 tentativas de sincronização malsucedidas.`, item.dados);
+        }
       }
     }
     

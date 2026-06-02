@@ -1,5 +1,6 @@
 import { obterLinhas, obterLinha } from '../local-cache';
 import { Suplemento } from '../../types/suplemento';
+import suplementosSeed from '../seeds/suplementos.json';
 
 const SUPLEMENTOS_FALLBACK: Suplemento[] = [
   {
@@ -94,15 +95,36 @@ const SUPLEMENTOS_FALLBACK: Suplemento[] = [
   }
 ];
 
+function parseSuplementoSeed(seed: any): Suplemento {
+  return {
+    id: seed.id,
+    nome: seed.nome,
+    grau_evidencia: seed.nivel_evidencia || seed.grau_evidencia,
+    dose_recomendada: seed.dose_padrao || seed.dose_recomendada,
+    horario_recomendado: seed.timing_recomendado || seed.horario_recomendado,
+    descricao_curta: seed.mecanismo_resumido || seed.descricao_curta,
+    mecanismo_acao: seed.mecanismo_acao,
+    referencias_ids: seed.referencias || seed.referencias_ids || [],
+  };
+}
+
 export async function listarSuplementos(): Promise<Suplemento[]> {
   try {
     const linhas = await obterLinhas<any>('SELECT * FROM suplementos');
     if (linhas && linhas.length > 0) {
       return linhas.map(parseSuplemento);
     }
+    
+    // Tenta obter do JSON compilado
+    if (suplementosSeed && suplementosSeed.length > 0) {
+      return (suplementosSeed as any[]).map(parseSuplementoSeed);
+    }
     return SUPLEMENTOS_FALLBACK;
   } catch (error) {
     console.warn('Usando fallback offline para listar suplementos devido a:', error);
+    if (suplementosSeed && suplementosSeed.length > 0) {
+      return (suplementosSeed as any[]).map(parseSuplementoSeed);
+    }
     return SUPLEMENTOS_FALLBACK;
   }
 }
@@ -113,10 +135,21 @@ export async function obterSuplementoPorId(id: string): Promise<Suplemento | nul
     if (linha) {
       return parseSuplemento(linha);
     }
+    
+    // Tenta obter do JSON compilado
+    const seed = (suplementosSeed as any[]).find(s => s.id === id);
+    if (seed) {
+      return parseSuplementoSeed(seed);
+    }
+    
     const fallback = SUPLEMENTOS_FALLBACK.find(s => s.id === id);
     return fallback || null;
   } catch (error) {
     console.warn(`Usando fallback offline para obter suplemento ${id} devido a:`, error);
+    const seed = (suplementosSeed as any[]).find(s => s.id === id);
+    if (seed) {
+      return parseSuplementoSeed(seed);
+    }
     const fallback = SUPLEMENTOS_FALLBACK.find(s => s.id === id);
     return fallback || null;
   }
