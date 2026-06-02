@@ -20,17 +20,29 @@ export async function initializeSchema() {
 
     if (currentVersion < LOCAL_SCHEMA_VERSION) {
       console.log(`Atualizando schema local da versão ${currentVersion} para ${LOCAL_SCHEMA_VERSION}`);
-      const db = await getDb();
+      let db;
+      try {
+        db = await getDb();
+      } catch (dbError) {
+        console.error('Erro crítico ao abrir conexão do banco de dados para migrações:', dbError);
+        return;
+      }
       
       for (const migration of migrations) {
         if (migration.version > currentVersion) {
           console.log(`Rodando migration ${migration.version}...`);
-          await migration.up(db);
-          currentVersion = migration.version;
-          await AsyncStorage.setItem(SCHEMA_VERSION_KEY, currentVersion.toString());
+          try {
+            await migration.up(db);
+            currentVersion = migration.version;
+            await AsyncStorage.setItem(SCHEMA_VERSION_KEY, currentVersion.toString());
+          } catch (migrationError) {
+            console.error(`Falha crítica na migração versão ${migration.version}:`, migrationError);
+            // Interrompe o loop de migrações para evitar novos erros sequenciais, mas sem crashar.
+            break;
+          }
         }
       }
-      console.log('Migrações locais concluídas com sucesso.');
+      console.log('Migrações locais concluídas ou tratadas de forma resiliente.');
     }
   } catch (error) {
     console.error('Erro ao inicializar schema local:', error);

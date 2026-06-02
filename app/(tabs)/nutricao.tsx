@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Switch, Pressable, Modal, TextInput } from 'react-native';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { View, ScrollView, Switch, Pressable, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { Egg, ArrowRight, Clock, Plus, Trash, TrendUp, Info, CheckCircle, Warning } from 'phosphor-react-native';
@@ -13,8 +13,13 @@ import { useEvolucaoPeso } from '../../hooks/useEvolucaoPeso';
 import { useLembretes } from '../../hooks/useLembretes';
 import { listarSuplementos } from '../../db/queries/suplementos';
 import { Suplemento } from '../../types/suplemento';
-import { GraficoPesoSkia } from '../../components/nutricao/GraficoPesoSkia';
 import { ModalLembrete } from '../../components/nutricao/ModalLembrete';
+import { SkiaErrorBoundary } from '../../components/ui/SkiaErrorBoundary';
+
+// Lazy load do gráfico Skia para evitar crash se o Skia nativo falhar no standalone build
+const GraficoPesoSkia = lazy(() =>
+  import('../../components/nutricao/GraficoPesoSkia').then(module => ({ default: module.GraficoPesoSkia }))
+);
 
 export default function NutricaoScreen() {
   const { tokens } = useTheme();
@@ -433,9 +438,22 @@ export default function NutricaoScreen() {
               </Botao>
             </Card>
 
-            {/* Componente Gráfico Skia */}
+            {/* Componente Gráfico Skia protegido contra falha nativa */}
             <View className="mb-6">
-              <GraficoPesoSkia historico={historico} />
+              <SkiaErrorBoundary fallback={
+                <View className="bg-elevated p-4 rounded-md border border-border-subtle h-[180px] justify-center items-center">
+                  <Texto variant="caption" color="muted">Evolução do peso indisponível (Erro Skia)</Texto>
+                </View>
+              }>
+                <Suspense fallback={
+                  <View className="bg-elevated p-4 rounded-md border border-border-subtle h-[180px] justify-center items-center">
+                    <ActivityIndicator size="small" color={tokens.accent.bronze} />
+                    <Texto variant="caption" color="muted" className="mt-2">Carregando gráfico de evolução...</Texto>
+                  </View>
+                }>
+                  <GraficoPesoSkia historico={historico} />
+                </Suspense>
+              </SkiaErrorBoundary>
             </View>
 
             <Texto variant="caption" color="muted" className="text-center leading-[18.2px]">

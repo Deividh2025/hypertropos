@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { View, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { useSilhueta } from '../../hooks/useSilhueta';
-import EstatuaSVG from './EstatuaSVG';
 import { Texto } from '../ui/Texto';
 import { useTheme } from '../../hooks/useTheme';
 import { ShieldCheck, Info } from 'phosphor-react-native';
+import { SkiaErrorBoundary } from '../ui/SkiaErrorBoundary';
+
+// Lazy load do componente Skia para isolar falhas de link nativo
+const EstatuaSVG = lazy(() => import('./EstatuaSVG'));
 
 export interface SilhuetaProgressoProps {
   onRegiaoTocada?: (regiao: string) => void;
@@ -91,16 +94,27 @@ export default function SilhuetaProgresso({ onRegiaoTocada }: SilhuetaProgressoP
           </Texto>
         </View>
 
-        {/* Estatua Skia Interativa */}
+        {/* Estatua Skia Interativa protegida contra falha nativa */}
         <View style={styles.canvasContainer}>
-          <EstatuaSVG 
-            estado={estadoSilhueta}
-            largura={240}
-            altura={340}
-            frente={frente}
-            interativo={true}
-            onRegiaoTocada={handleRegiaoTocada}
-          />
+          <SkiaErrorBoundary>
+            <Suspense fallback={
+              <View style={styles.center}>
+                <ActivityIndicator size="large" color={tokens.accent.bronze} />
+                <Texto variant="body" color="secondary" style={styles.loadingText}>
+                  Carregando silhueta...
+                </Texto>
+              </View>
+            }>
+              <EstatuaSVG 
+                estado={estadoSilhueta}
+                largura={240}
+                altura={340}
+                frente={frente}
+                interativo={true}
+                onRegiaoTocada={handleRegiaoTocada}
+              />
+            </Suspense>
+          </SkiaErrorBoundary>
         </View>
 
         {/* Toggle Segmentado de Orientação */}

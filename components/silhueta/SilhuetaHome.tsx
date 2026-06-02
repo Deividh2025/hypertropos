@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { View, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import { useSilhueta } from '../../hooks/useSilhueta';
-import EstatuaSVG from './EstatuaSVG';
 import { Texto } from '../ui/Texto';
 import { useTheme } from '../../hooks/useTheme';
+import { SkiaErrorBoundary } from '../ui/SkiaErrorBoundary';
+
+// Lazy load do componente Skia para isolar falhas de link nativo
+const EstatuaSVG = lazy(() => import('./EstatuaSVG'));
 
 export default function SilhuetaHome() {
   const { tokens } = useTheme();
@@ -73,15 +76,26 @@ export default function SilhuetaHome() {
         </Texto>
       </View>
 
-      {/* Renderizador Vetorial performático Skia */}
+      {/* Renderizador Vetorial performático Skia protegido contra falha nativa */}
       <View style={styles.canvasContainer}>
-        <EstatuaSVG 
-          estado={estadoSilhueta}
-          largura={200}
-          altura={270}
-          frente={frente}
-          interativo={false}
-        />
+        <SkiaErrorBoundary>
+          <Suspense fallback={
+            <View style={styles.center}>
+              <ActivityIndicator size="small" color={tokens.accent.bronze} />
+              <Texto variant="caption" color="muted" style={styles.loadingText}>
+                Carregando silhueta...
+              </Texto>
+            </View>
+          }>
+            <EstatuaSVG 
+              estado={estadoSilhueta}
+              largura={200}
+              altura={270}
+              frente={frente}
+              interativo={false}
+            />
+          </Suspense>
+        </SkiaErrorBoundary>
       </View>
 
       {/* Toggle Segmentado Moderno inferior direito (Thumb Zone amigável) */}

@@ -11,9 +11,18 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://seu-projeto.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sua-anon-key-aqui"
       }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://seu-projeto.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sua-anon-key-aqui"
+      }
+    }
   },
   "submit": {
     "production": {}

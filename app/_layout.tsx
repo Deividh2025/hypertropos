@@ -1,3 +1,4 @@
+import React from 'react'
 import 'react-native-gesture-handler'
 import { useFonts } from 'expo-font'
 import {
@@ -83,6 +84,33 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   )
 }
 
+class GlobalLayoutErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  constructor(props: any) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('CRITICAL: Erro capturado no nível mais alto do RootLayout:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError && this.state.error) {
+      return (
+        <ErrorBoundary 
+          error={this.state.error} 
+          retry={async () => { this.setState({ hasError: false, error: null }) }} 
+        />
+      )
+    }
+    return this.props.children
+  }
+}
+
 export const unstable_settings = {
   // Garante que ao recarregar em /modal, o botão de voltar seja exibido.
   initialRouteName: '(tabs)',
@@ -104,22 +132,30 @@ export default function RootLayout() {
   })
 
   useEffect(() => {
-    if (error) {
-      console.error('Erro ao carregar fontes do Google Fonts:', error)
+    async function hideSplash() {
+      try {
+        if (loaded || error) {
+          if (error) {
+            console.error('Erro ao carregar fontes do Google Fonts (usando fallback do sistema):', error);
+          }
+          await SplashScreen.hideAsync();
+        }
+      } catch (splashError) {
+        console.warn('Erro ao ocultar o SplashScreen de forma síncrona/assíncrona:', splashError);
+      }
     }
-  }, [error])
-
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync()
-    }
-  }, [loaded, error])
+    hideSplash();
+  }, [loaded, error]);
 
   if (!loaded && !error) {
-    return null
+    return null;
   }
 
-  return <RootLayoutNav />
+  return (
+    <GlobalLayoutErrorBoundary>
+      <RootLayoutNav />
+    </GlobalLayoutErrorBoundary>
+  )
 }
 
 function RootLayoutNav() {
