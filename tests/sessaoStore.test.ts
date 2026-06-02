@@ -11,11 +11,14 @@ vi.mock('react-native', () => ({
   },
 }));
 
-vi.mock('expo-av', () => ({
-  Audio: {
-    Sound: vi.fn(),
-    setAudioModeAsync: vi.fn(),
-  },
+vi.mock('expo-audio', () => ({
+  createAudioPlayer: vi.fn(() => ({
+    play: vi.fn(),
+    pause: vi.fn(),
+    seekTo: vi.fn(),
+    release: vi.fn(),
+    volume: 1.0,
+  })),
 }));
 
 vi.mock('../lib/motor-audio', () => ({
