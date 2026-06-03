@@ -27,6 +27,7 @@ import '../global.css'
 import { useColorScheme } from '@/components/useColorScheme'
 import { initializeSchema } from '../db/schema-local'
 import { useSyncEngine } from '../db/sync-engine'
+import { inicializarIdentidade } from '../db/identity'
 import { usePerfilStore } from '../stores/perfilStore'
 import { motorAudio } from '../lib/motor-audio'
 import { ErrorBoundaryProps } from 'expo-router'
@@ -172,6 +173,9 @@ function RootLayoutNav() {
         // Inicializa o banco de dados local SQLite e o motor de áudio
         await initializeSchema()
         await motorAudio.inicializar()
+        // Inicializa a identidade de sincronização (login anônimo) para o backup na nuvem.
+        // É resiliente: se falhar, o app segue em modo local-only.
+        await inicializarIdentidade()
         // Carrega o perfil do usuário
         await carregarPerfil()
       } catch (err) {

@@ -72,6 +72,7 @@ const criarClienteMockSupabase = () => {
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } }, error: null }),
       getUser: async () => ({ data: { user: null }, error: null }),
       signInWithPassword: async () => ({ data: { user: null, session: null }, error: null }),
+      signInAnonymously: async () => ({ data: { user: null, session: null }, error: null }),
       signOut: async () => ({ error: null }),
     },
     from: () => new Proxy({
