@@ -113,7 +113,6 @@ class GlobalLayoutErrorBoundary extends React.Component<{ children: React.ReactN
 }
 
 export const unstable_settings = {
-  // Garante que ao recarregar em /modal, o botão de voltar seja exibido.
   initialRouteName: '(tabs)',
 }
 
@@ -206,10 +205,7 @@ function RootLayoutNav() {
             <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           ) : (
             // Apenas quando o onboarding for concluído é que o app principal é exposto
-            <>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-            </>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           )}
         </Stack>
       </View>
