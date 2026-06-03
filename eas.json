@@ -13,14 +13,14 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://seu-projeto.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sua-anon-key-aqui"
+        "EXPO_PUBLIC_SUPABASE_URL": "https://bjxzzzirrhaciuhezaog.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeHp6emlycmhhY2l1aGV6YW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTkzNDIsImV4cCI6MjA5NDc3NTM0Mn0.8dZa5XitmZDTlzEmWEDeUOz11vR7CH4fRcLnR0DRluo"
       }
     },
     "production": {
       "env": {
-        "EXPO_PUBLIC_SUPABASE_URL": "https://seu-projeto.supabase.co",
-        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "sua-anon-key-aqui"
+        "EXPO_PUBLIC_SUPABASE_URL": "https://bjxzzzirrhaciuhezaog.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqeHp6emlycmhhY2l1aGV6YW9nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxOTkzNDIsImV4cCI6MjA5NDc3NTM0Mn0.8dZa5XitmZDTlzEmWEDeUOz11vR7CH4fRcLnR0DRluo"
       }
     }
   },
