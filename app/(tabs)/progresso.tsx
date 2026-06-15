@@ -826,7 +826,7 @@ export default function ProgressoScreen() {
               </View>
             ) : (
               !ehSurpresaTrancadaDetalhe && (
-                <View className="mb-6 px-4 py-2 bg-bg-highlight/50 rounded-xs border border-border-subtle">
+                <View className="mb-6 px-4 py-2 bg-highlight/50 rounded-xs border border-border-subtle">
                   <Texto variant="caption" color="muted" className="text-center italic">
                     Dica: Progrida e treine de forma consistente para alcançar este marco.
                   </Texto>

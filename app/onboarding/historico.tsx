@@ -5,10 +5,12 @@ import { OnboardingScreen } from '../../components/onboarding/OnboardingScreen';
 import { SelectableCard } from '../../components/onboarding/SelectableCard';
 import { Texto } from '../../components/ui/Texto';
 import { useOnboardingStore } from '../../stores/onboardingStore';
+import { useTheme } from '../../hooks/useTheme';
 import { HistoricoClinicoOpcao } from '../../types/onboarding';
 
 export default function HistoricoScreen() {
   const router = useRouter();
+  const { tokens } = useTheme();
   const { data, togglePredisposicao, setNotaClinica, setStep } = useOnboardingStore();
   
   const [modo, setModo] = useState<'nenhum' | 'lista' | 'texto'>('nenhum');
@@ -99,7 +101,7 @@ export default function HistoricoScreen() {
                 value={nota}
                 onChangeText={setNota}
                 placeholder="Ex: Tive uma cirurgia no joelho esquerdo em 2021..."
-                placeholderTextColor="var(--color-fg-muted)"
+                placeholderTextColor={tokens.fg.muted}
                 multiline
                 className="font-body text-[15px] leading-[22.5px] text-fg-primary w-full h-full text-left align-top"
                 style={{ textAlignVertical: 'top' }}

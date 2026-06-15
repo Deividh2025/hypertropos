@@ -90,7 +90,7 @@ export default function CienciaScreen() {
     return (
       <Pressable
         onPress={() => handlePressCard(item.id)}
-        className="mb-4 bg-bg-elevated border border-border-subtle rounded-md p-4 flex-row items-start justify-between active:scale-[0.98] transition-transform"
+        className="mb-4 bg-elevated border border-border-subtle rounded-md p-4 flex-row items-start justify-between active:scale-[0.98]"
         style={{ minHeight: 110 }}
       >
         <View className="flex-1 pr-3 gap-2">
@@ -108,7 +108,7 @@ export default function CienciaScreen() {
           
           <View className="flex-row flex-wrap gap-1.5 mt-1">
             {item.tags.slice(0, 3).map(tag => (
-              <View key={tag} className="bg-bg-highlight/30 px-2 py-0.5 rounded-xs">
+              <View key={tag} className="bg-highlight/30 px-2 py-0.5 rounded-xs">
                 <Texto variant="caption" color="secondary" className="text-[11px] font-medium">
                   #{tag.replace('_', ' ')}
                 </Texto>
@@ -145,7 +145,7 @@ export default function CienciaScreen() {
 
       {/* Busca */}
       <View 
-        className="flex-row items-center bg-bg-elevated border border-border-subtle rounded-md px-4 mb-6"
+        className="flex-row items-center bg-elevated border border-border-subtle rounded-md px-4 mb-6"
         style={{ height: 50 }}
       >
         <MagnifyingGlass size={20} color={tokens.fg.muted} />

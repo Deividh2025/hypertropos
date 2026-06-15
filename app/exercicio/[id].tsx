@@ -113,7 +113,7 @@ export default function ExercicioDetalheScreen() {
       >
         <Pressable 
           onPress={handleVoltar} 
-          className="p-2 -ml-2 rounded-full active:bg-bg-highlight/30"
+          className="p-2 -ml-2 rounded-full active:bg-highlight/30"
           style={{ width: 44, height: 44, justifyContent: 'center', alignItems: 'center' }}
         >
           <ArrowLeft size={24} color={tokens.fg.primary} />
@@ -191,7 +191,7 @@ export default function ExercicioDetalheScreen() {
         </View>
 
         {/* Abas */}
-        <View className="flex-row border-b border-border-subtle bg-bg-elevated/40">
+        <View className="flex-row border-b border-border-subtle bg-elevated/40">
           <Pressable 
             onPress={() => handleMudarAba('como_fazer')}
             className={`flex-1 py-4 justify-center items-center border-b-2 ${abaAtiva === 'como_fazer' ? 'border-accent-bronze' : 'border-transparent'}`}
@@ -242,7 +242,7 @@ export default function ExercicioDetalheScreen() {
                     <Info size={20} color={tokens.accent.bronze} />
                     <Texto variant="h3" color="primary" className="font-semibold">Dicas de Controle</Texto>
                   </View>
-                  <View className="bg-bg-elevated/40 border border-border-subtle p-4 rounded-md gap-2.5">
+                  <View className="bg-elevated/40 border border-border-subtle p-4 rounded-md gap-2.5">
                     {exercicio.dicas_tecnicas.map((dica, idx) => (
                       <View key={idx} className="flex-row items-start gap-2.5">
                         <Texto color="bronze" variant="bodyBold">•</Texto>
@@ -276,7 +276,7 @@ export default function ExercicioDetalheScreen() {
               )}
 
               {/* Cadência e Repetições */}
-              <View className="bg-bg-highlight/30 p-4 rounded-md flex-row justify-between items-center">
+              <View className="bg-highlight/30 p-4 rounded-md flex-row justify-between items-center">
                 <View className="gap-1 flex-1">
                   <Texto variant="captionBold" color="muted" className="uppercase tracking-wider">Cadência Alvo</Texto>
                   <Texto variant="h3" className="font-semibold">
@@ -324,7 +324,7 @@ export default function ExercicioDetalheScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         if (ref.url) Linking.openURL(ref.url);
                       }}
-                      className="bg-bg-elevated border border-border-subtle p-4 rounded-md flex-row items-center justify-between active:bg-bg-highlight/30"
+                      className="bg-elevated border border-border-subtle p-4 rounded-md flex-row items-center justify-between active:bg-highlight/30"
                     >
                       <View className="flex-1 pr-4 gap-1">
                         <Texto variant="bodyBold" color="primary">
@@ -358,11 +358,11 @@ export default function ExercicioDetalheScreen() {
                   <Pressable
                     key={sub.id}
                     onPress={() => handlePressSubstituto(sub.id)}
-                    className="flex-row items-center justify-between bg-bg-elevated border border-border-subtle p-4 rounded-md active:scale-[0.99]"
+                    className="flex-row items-center justify-between bg-elevated border border-border-subtle p-4 rounded-md active:scale-[0.99]"
                   >
                     <View className="flex-row items-center gap-3.5 flex-1">
                       {/* Thumnbail Fallback SVG */}
-                      <View className="w-12 h-12 rounded-sm bg-bg-highlight/40 justify-center items-center">
+                      <View className="w-12 h-12 rounded-sm bg-highlight/40 justify-center items-center">
                         <Svg width="30" height="30" viewBox="0 0 100 100">
                           <Path
                             d="M 50 15 C 53 15, 53 21, 50 21 C 47 21, 47 15, 50 15 Z M 50 22 L 50 42 M 50 25 L 32 30 M 50 25 L 68 30 M 50 42 L 35 60 M 50 42 L 65 60"

@@ -76,7 +76,7 @@ export function TimerDescanso() {
     <View className="px-6 py-6 bg-canvas border-t border-border-subtle/50 h-[240px] justify-center items-center gap-4">
       
       {/* Barra de progresso horizontal discreta */}
-      <View className="w-full h-[3px] bg-bg-highlight rounded-full overflow-hidden absolute top-0 left-0 right-0">
+      <View className="w-full h-[3px] bg-highlight rounded-full overflow-hidden absolute top-0 left-0 right-0">
         <View 
           className="h-full bg-accent-bronze"
           style={{ width: `${progressoRestante}%` }}

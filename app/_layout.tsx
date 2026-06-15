@@ -24,7 +24,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 // Tailwind inicialize e as classes className funcionem em toda a árvore.
 import '../global.css'
 
-import { useColorScheme } from '@/components/useColorScheme'
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import { useTheme } from '../hooks/useTheme'
+import { useThemeStore } from '../stores/themeStore'
 import { initializeSchema } from '../db/schema-local'
 import { useSyncEngine } from '../db/sync-engine'
 import { inicializarIdentidade } from '../db/identity'
@@ -38,14 +41,14 @@ import { IndicadorConexao } from '../components/ui/IndicadorConexao'
 
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   return (
-    <View style={{ flex: 1, backgroundColor: '#141210', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-      <Warning size={64} color="#D4A373" weight="duotone" />
+    <View style={{ flex: 1, backgroundColor: '#1A1715', justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+      <Warning size={64} color="#C19A6B" weight="duotone" />
       
       <Texto variant="h1" color="marble" style={{ marginTop: 24, textAlign: 'center', fontSize: 24 }}>
         Ops! Algo saiu da rota científica
       </Texto>
       
-      <View style={{ backgroundColor: '#1E1B18', borderWidth: 1, borderColor: '#2E2A25', padding: 16, borderRadius: 8, width: '100%', marginTop: 24, gap: 8 }}>
+      <View style={{ backgroundColor: '#252220', borderWidth: 1, borderColor: '#3D3733', padding: 16, borderRadius: 8, width: '100%', marginTop: 24, gap: 8 }}>
         <Texto variant="bodyBold" color="bronze">O que houve:</Texto>
         <Texto variant="caption" color="secondary" style={{ fontSize: 13, fontFamily: 'monospace' }}>
           {error.message || 'Ocorreu uma falha de rendering ou de estado interno.'}
@@ -66,7 +69,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
         onPress={retry}
         style={{
           marginTop: 32,
-          backgroundColor: '#D4A373',
+          backgroundColor: '#C19A6B',
           paddingVertical: 14,
           paddingHorizontal: 28,
           borderRadius: 8,
@@ -76,8 +79,8 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
           minHeight: 48
         }}
       >
-        <ArrowCounterClockwise size={20} color="#141210" weight="bold" />
-        <Texto variant="bodyBold" style={{ color: '#141210' }}>
+        <ArrowCounterClockwise size={20} color="#1A1715" weight="bold" />
+        <Texto variant="bodyBold" style={{ color: '#1A1715' }}>
           Tentar Novamente
         </Texto>
       </Pressable>
@@ -110,6 +113,33 @@ class GlobalLayoutErrorBoundary extends React.Component<{ children: React.ReactN
     }
     return this.props.children
   }
+}
+
+// Temas de navegação alinhados aos tokens do app, para que o "chrome" do
+// React Navigation e o fundo de fallback usem as cores corretas (mármore/
+// bronze) em vez do cinza/preto genéricos dos temas padrão.
+const NavDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: '#1A1715',
+    card: '#252220',
+    text: '#F2EAE0',
+    border: '#3D3733',
+    primary: '#C19A6B',
+  },
+}
+
+const NavLightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#F5F0E8',
+    card: '#FAF5ED',
+    text: '#2A2520',
+    border: '#DDD3C2',
+    primary: '#8B6F47',
+  },
 }
 
 export const unstable_settings = {
@@ -147,6 +177,11 @@ export default function RootLayout() {
     hideSplash();
   }, [loaded, error]);
 
+  // Hidrata o tema e o modo calmo (persistidos) uma única vez ao iniciar.
+  useEffect(() => {
+    useThemeStore.getState().hydrate()
+  }, [])
+
   if (!loaded && !error) {
     return null;
   }
@@ -159,9 +194,17 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme()
+  const { theme } = useTheme()
+  const { setColorScheme } = useNativeWindColorScheme()
   const { perfil, carregarPerfil, isLoading: carregandoPerfil } = usePerfilStore()
   const [isReady, setIsReady] = useState(false)
+
+  // Ponto ÚNICO de sincronização do tema com o NativeWind (classe .dark).
+  // Resolve a dessincronia que fazia o texto do tema claro aparecer sobre
+  // o fundo escuro (o "lodo" de baixo contraste).
+  useEffect(() => {
+    setColorScheme(theme)
+  }, [theme, setColorScheme])
   
   // Inicia o engine de sincronização offline-first apenas quando o app estiver inicializado e pronto
   useSyncEngine(isReady && !carregandoPerfil)
@@ -194,21 +237,23 @@ function RootLayoutNav() {
   const onboardingComplete = perfil !== null
 
   return (
-    // ThemeProvider aplica o tema claro/escuro do sistema ao Expo Router
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <View style={{ flex: 1 }}>
-        <IndicadorConexao />
-        <Stack screenOptions={{ headerShown: false }}>
-          {!onboardingComplete ? (
-            // Roteamento condicional seguro: se o onboarding não estiver completo,
-            // apenas o Stack do onboarding existe no roteador.
-            <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          ) : (
-            // Apenas quando o onboarding for concluído é que o app principal é exposto
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          )}
-        </Stack>
-      </View>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      {/* ThemeProvider alimentado pela fonte ÚNICA de tema (themeStore) */}
+      <ThemeProvider value={theme === 'dark' ? NavDarkTheme : NavLightTheme}>
+        <View style={{ flex: 1, backgroundColor: theme === 'dark' ? '#1A1715' : '#F5F0E8' }}>
+          <IndicadorConexao />
+          <Stack screenOptions={{ headerShown: false }}>
+            {!onboardingComplete ? (
+              // Roteamento condicional seguro: se o onboarding não estiver completo,
+              // apenas o Stack do onboarding existe no roteador.
+              <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+            ) : (
+              // Apenas quando o onboarding for concluído é que o app principal é exposto
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            )}
+          </Stack>
+        </View>
+      </ThemeProvider>
+    </SafeAreaProvider>
   )
 }

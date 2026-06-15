@@ -184,7 +184,7 @@ export function SkeletonArtigos() {
       {[1, 2, 3, 4].map((i) => (
         <View
           key={i}
-          className="mb-4 bg-bg-elevated/40 border border-border-subtle/30 rounded-md p-4 min-h-[110px] gap-3"
+          className="mb-4 bg-elevated/40 border border-border-subtle/30 rounded-md p-4 min-h-[110px] gap-3"
         >
           <Skeleton width="40%" height={12} borderRadius={4} />
           <Skeleton width="90%" height={20} />
@@ -287,7 +287,7 @@ export function SkeletonExercicioDetalhe() {
       </View>
 
       {/* Tabs */}
-      <View className="flex-row border-b border-border-subtle bg-bg-elevated/20 h-[50px] items-center px-6 gap-4">
+      <View className="flex-row border-b border-border-subtle bg-elevated/20 h-[50px] items-center px-6 gap-4">
         <Skeleton width="28%" height={16} />
         <Skeleton width="28%" height={16} />
         <Skeleton width="28%" height={16} />
@@ -304,7 +304,7 @@ export function SkeletonExercicioDetalhe() {
 
         <View className="gap-3">
           <Skeleton width="30%" height={16} />
-          <View className="bg-bg-elevated/40 border border-border-subtle p-4 rounded-md gap-2.5">
+          <View className="bg-elevated/40 border border-border-subtle p-4 rounded-md gap-2.5">
             <Skeleton width="90%" height={12} />
             <Skeleton width="80%" height={12} />
             <Skeleton width="85%" height={12} />

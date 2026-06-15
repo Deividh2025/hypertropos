@@ -271,7 +271,7 @@ export default function ArtigoLeitorScreen() {
       >
         <Pressable 
           onPress={handleVoltar} 
-          className="p-2 -ml-2 rounded-full active:bg-bg-highlight/30"
+          className="p-2 -ml-2 rounded-full active:bg-highlight/30"
           style={{ width: 44, height: 44, justifyContent: 'center', alignItems: 'center' }}
         >
           <ArrowLeft size={24} color={tokens.fg.primary} />
@@ -279,7 +279,7 @@ export default function ArtigoLeitorScreen() {
         
         <View className="ml-3 flex-row flex-wrap gap-1.5 flex-1 items-center">
           {artigo.tags.slice(0, 2).map(tag => (
-            <View key={tag} className="bg-bg-highlight px-2.5 py-0.5 rounded-full">
+            <View key={tag} className="bg-highlight px-2.5 py-0.5 rounded-full">
               <Texto variant="caption" color="bronze" className="text-[10px] uppercase font-bold tracking-wider">
                 {tag.replace('_', ' ')}
               </Texto>
@@ -344,7 +344,7 @@ export default function ArtigoLeitorScreen() {
                     // Abre o PubMed ou DOI relacionado (para fins de simulação na V1 abre o pubmed geral)
                     Linking.openURL(`https://pubmed.ncbi.nlm.nih.gov/?term=${refId}`);
                   }}
-                  className="bg-bg-elevated/40 border border-border-subtle/50 p-3 rounded-xs flex-row items-center justify-between active:bg-bg-highlight/20"
+                  className="bg-elevated/40 border border-border-subtle/50 p-3 rounded-xs flex-row items-center justify-between active:bg-highlight/20"
                 >
                   <View className="flex-1 pr-3">
                     <Texto variant="captionBold" color="bronze">
@@ -368,7 +368,7 @@ export default function ArtigoLeitorScreen() {
         style={{ minHeight: 90 }}
       >
         {lido ? (
-          <View className="bg-bg-highlight/30 rounded-sm py-4 px-6 flex-row items-center justify-center gap-2">
+          <View className="bg-highlight/30 rounded-sm py-4 px-6 flex-row items-center justify-center gap-2">
             <Check size={20} color={tokens.feedback.success} weight="bold" />
             <Texto variant="bodyBold" color="success">
               Você já leu este artigo

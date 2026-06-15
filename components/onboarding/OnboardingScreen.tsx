@@ -7,6 +7,7 @@ import { Container } from '../ui/Container';
 import { Texto } from '../ui/Texto';
 import { Botao } from '../ui/Botao';
 import { ProgressBar } from './ProgressBar';
+import { useTheme } from '../../hooks/useTheme';
 
 interface OnboardingScreenProps {
   title: string;
@@ -34,6 +35,7 @@ export function OnboardingScreen({
   showNextButton = true,
 }: OnboardingScreenProps) {
   const router = useRouter();
+  const { tokens } = useTheme();
 
   const handleBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -91,7 +93,7 @@ export function OnboardingScreen({
             paddingBottom: Platform.OS === 'ios' ? 34 : 24,
             paddingTop: 16,
             borderTopWidth: 1,
-            borderTopColor: 'var(--color-divider)'
+            borderTopColor: tokens.divider
           }}
         >
           <Botao 

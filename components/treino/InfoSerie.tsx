@@ -63,7 +63,7 @@ export function InfoSerie() {
         <View className="gap-3">
           {/* Cadência */}
           <View className="flex-row items-center gap-3">
-            <View className="w-8 h-8 rounded-full bg-bg-highlight justify-center items-center">
+            <View className="w-8 h-8 rounded-full bg-highlight justify-center items-center">
               <Metronome size={18} color={tokens.accent.bronze} weight="light" />
             </View>
             <View className="flex-1">
@@ -76,7 +76,7 @@ export function InfoSerie() {
 
           {/* RIR Alvo */}
           <View className="flex-row items-center gap-3">
-            <View className="w-8 h-8 rounded-full bg-bg-highlight justify-center items-center">
+            <View className="w-8 h-8 rounded-full bg-highlight justify-center items-center">
               <ArrowCircleRight size={18} color={tokens.accent.bronze} weight="fill" />
             </View>
             <View className="flex-1">

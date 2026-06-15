@@ -145,7 +145,7 @@ export function FraseCientificaInline() {
     <>
       <Pressable 
         onPress={handleOpenBottomSheet}
-        className="h-[40px] justify-center items-center px-6 bg-canvas border-b border-border-subtle/30 active:bg-bg-highlight/20"
+        className="h-[40px] justify-center items-center px-6 bg-canvas border-b border-border-subtle/30 active:bg-highlight/20"
       >
         <Animated.View style={animatedStyle} className="flex-row items-center justify-center gap-2">
           <BookOpen size={13} color={tokens.accent.bronze} weight="fill" />
@@ -198,7 +198,7 @@ export function FraseCientificaInline() {
               </View>
               <Pressable 
                 onPress={handleCloseBottomSheet} 
-                className="p-2 bg-bg-elevated rounded-full border border-border-subtle"
+                className="p-2 bg-elevated rounded-full border border-border-subtle"
                 style={{ width: 38, height: 38, justifyContent: 'center', alignItems: 'center' }}
               >
                 <X size={18} color={tokens.fg.primary} />
@@ -244,7 +244,7 @@ export function FraseCientificaInline() {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             if (ref.url) Linking.openURL(ref.url);
                           }}
-                          className="bg-bg-elevated border border-border-subtle p-3.5 rounded-md flex-row items-center justify-between active:bg-bg-highlight/30"
+                          className="bg-elevated border border-border-subtle p-3.5 rounded-md flex-row items-center justify-between active:bg-highlight/30"
                         >
                           <View className="flex-1 pr-3 gap-0.5">
                             <Texto variant="captionBold" color="primary" className="text-[14px]">

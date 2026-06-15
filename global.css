@@ -5,6 +5,16 @@
  * em tempo de build. Este arquivo é o ponto de entrada desse compilador.
  * O Metro bundler (via withNativeWind) lê este arquivo e gera os estilos
  * correspondentes para cada plataforma.
+ *
+ * IMPORTANTE — formato das cores:
+ * Os tokens são declarados como TRIPLETOS RGB separados por espaço
+ * (ex.: 26 23 21), e NÃO como hex. Isso é o que permite que os
+ * modificadores de opacidade do Tailwind funcionem, porque o tailwind.config
+ * referencia cada token como `rgb(var(--token) / <alpha-value>)`. Assim,
+ * classes como `bg-accent-bronze/10` ou `border-border-subtle/50` aplicam
+ * o alpha corretamente. Se precisar do valor como cor sólida diretamente no
+ * código (fora das classes), use o hex equivalente em constants/tokens.ts
+ * via o hook useTheme(), e não a variável CSS crua.
  */
 @tailwind base;
 @tailwind components;
@@ -12,41 +22,41 @@
 
 @layer base {
   :root {
-    --color-bg-canvas: #F5F0E8;
-    --color-bg-elevated: #FAF5ED;
-    --color-bg-overlay: #FFFFFF;
-    --color-bg-highlight: #EBE3D5;
-    --color-fg-primary: #2A2520;
-    --color-fg-secondary: #5C5247;
-    --color-fg-muted: #8C8073;
-    --color-fg-inverse: #FAF5ED;
-    --color-accent-bronze: #8B6F47;
-    --color-accent-marble: #B8AB9B;
-    --color-accent-gold: #B8935A;
-    --color-feedback-success: #5A8B47;
-    --color-feedback-warning: #B8853D;
-    --color-feedback-error: #A05543;
-    --color-border-subtle: #DDD3C2;
-    --color-border-strong: #B8AB9B;
-    --color-divider: #E5DDD0;
+    --color-bg-canvas: 245 240 232;
+    --color-bg-elevated: 250 245 237;
+    --color-bg-overlay: 255 255 255;
+    --color-bg-highlight: 235 227 213;
+    --color-fg-primary: 42 37 32;
+    --color-fg-secondary: 92 82 71;
+    --color-fg-muted: 140 128 115;
+    --color-fg-inverse: 250 245 237;
+    --color-accent-bronze: 139 111 71;
+    --color-accent-marble: 184 171 155;
+    --color-accent-gold: 184 147 90;
+    --color-feedback-success: 90 139 71;
+    --color-feedback-warning: 184 133 61;
+    --color-feedback-error: 160 85 67;
+    --color-border-subtle: 221 211 194;
+    --color-border-strong: 184 171 155;
+    --color-divider: 229 221 208;
   }
   .dark {
-    --color-bg-canvas: #1A1715;
-    --color-bg-elevated: #252220;
-    --color-bg-overlay: #2F2B28;
-    --color-bg-highlight: #3D3733;
-    --color-fg-primary: #F2EAE0;
-    --color-fg-secondary: #B8AB9B;
-    --color-fg-muted: #6E6457;
-    --color-fg-inverse: #1A1715;
-    --color-accent-bronze: #C19A6B;
-    --color-accent-marble: #E8DED1;
-    --color-accent-gold: #D4AF7A;
-    --color-feedback-success: #7FB069;
-    --color-feedback-warning: #D4A574;
-    --color-feedback-error: #C66D5A;
-    --color-border-subtle: #3D3733;
-    --color-border-strong: #5A4F44;
-    --color-divider: #2A2622;
+    --color-bg-canvas: 26 23 21;
+    --color-bg-elevated: 37 34 32;
+    --color-bg-overlay: 47 43 40;
+    --color-bg-highlight: 61 55 51;
+    --color-fg-primary: 242 234 224;
+    --color-fg-secondary: 184 171 155;
+    --color-fg-muted: 110 100 87;
+    --color-fg-inverse: 26 23 21;
+    --color-accent-bronze: 193 154 107;
+    --color-accent-marble: 232 222 209;
+    --color-accent-gold: 212 175 122;
+    --color-feedback-success: 127 176 105;
+    --color-feedback-warning: 212 165 116;
+    --color-feedback-error: 198 109 90;
+    --color-border-subtle: 61 55 51;
+    --color-border-strong: 90 79 68;
+    --color-divider: 42 38 34;
   }
 }

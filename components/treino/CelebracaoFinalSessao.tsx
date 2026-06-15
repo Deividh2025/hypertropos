@@ -167,7 +167,7 @@ export function CelebracaoFinalSessao() {
             <View className="flex-row flex-wrap justify-between gap-y-4">
               {/* Exercícios */}
               <View className="w-[46%] flex-row items-center gap-2.5">
-                <View className="w-9 h-9 rounded-full bg-bg-highlight justify-center items-center">
+                <View className="w-9 h-9 rounded-full bg-highlight justify-center items-center">
                   <Barbell size={18} color={tokens.accent.bronze} weight="bold" />
                 </View>
                 <View>
@@ -178,7 +178,7 @@ export function CelebracaoFinalSessao() {
 
               {/* Séries */}
               <View className="w-[46%] flex-row items-center gap-2.5">
-                <View className="w-9 h-9 rounded-full bg-bg-highlight justify-center items-center">
+                <View className="w-9 h-9 rounded-full bg-highlight justify-center items-center">
                   <Flame size={18} color={tokens.accent.bronze} weight="fill" />
                 </View>
                 <View>
@@ -189,7 +189,7 @@ export function CelebracaoFinalSessao() {
 
               {/* Duração */}
               <View className="w-[46%] flex-row items-center gap-2.5">
-                <View className="w-9 h-9 rounded-full bg-bg-highlight justify-center items-center">
+                <View className="w-9 h-9 rounded-full bg-highlight justify-center items-center">
                   <Clock size={18} color={tokens.accent.bronze} weight="bold" />
                 </View>
                 <View>
@@ -200,7 +200,7 @@ export function CelebracaoFinalSessao() {
 
               {/* Express ou Completo */}
               <View className="w-[46%] flex-row items-center gap-2.5">
-                <View className="w-9 h-9 rounded-full bg-bg-highlight justify-center items-center">
+                <View className="w-9 h-9 rounded-full bg-highlight justify-center items-center">
                   <Lightning size={18} color={tokens.accent.gold} weight="fill" />
                 </View>
                 <View>
@@ -277,7 +277,7 @@ export function CelebracaoFinalSessao() {
               style={[StyleSheet.absoluteFill, styles.localOverlay]}
               className="justify-center items-center px-6"
             >
-              <Card className="w-full max-w-[320px] rounded-[28px] p-8 items-center shadow-overlay bg-bg-elevated border border-border-strong">
+              <Card className="w-full max-w-[320px] rounded-[28px] p-8 items-center shadow-overlay bg-elevated border border-border-strong">
                 <View className="w-16 h-16 rounded-full bg-feedback-success/15 justify-center items-center mb-6">
                   <Star size={36} color={tokens.feedback.success} weight="fill" />
                 </View>

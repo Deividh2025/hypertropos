@@ -148,7 +148,7 @@ export function BotaoConcluirSerie() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setReps(prev => Math.max(1, prev - 1));
                   }}
-                  className="w-12 h-12 rounded-full bg-bg-highlight justify-center items-center"
+                  className="w-12 h-12 rounded-full bg-highlight justify-center items-center"
                   style={({ pressed }) => pressed && { backgroundColor: tokens.bg.highlight }}
                 >
                   <Minus size={22} color={tokens.fg.primary} weight="bold" />
@@ -167,7 +167,7 @@ export function BotaoConcluirSerie() {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setReps(prev => prev + 1);
                   }}
-                  className="w-12 h-12 rounded-full bg-bg-highlight justify-center items-center"
+                  className="w-12 h-12 rounded-full bg-highlight justify-center items-center"
                   style={({ pressed }) => pressed && { backgroundColor: tokens.bg.highlight }}
                 >
                   <Plus size={22} color={tokens.fg.primary} weight="bold" />
@@ -221,7 +221,7 @@ export function BotaoConcluirSerie() {
                           ? 'bg-accent-bronze border-accent-bronze' 
                           : isAlvo 
                             ? 'bg-accent-bronze/10 border-accent-bronze/40'
-                            : 'bg-bg-highlight border-border-subtle'
+                            : 'bg-highlight border-border-subtle'
                       }`}
                     >
                       <Texto 

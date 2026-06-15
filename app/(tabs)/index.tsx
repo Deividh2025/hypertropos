@@ -17,7 +17,7 @@ import { Botao } from '../../components/ui/Botao';
 import { useTheme } from '../../hooks/useTheme';
 import { useProgramaStore } from '../../stores/programaStore';
 import { useGamificacaoStore } from '../../stores/gamificacaoStore';
-import { Flame, CalendarBlank, Check, Moon, Sun, ArrowRight, Trophy, Shield, Gear } from 'phosphor-react-native';
+import { Flame, CalendarBlank, Check, Moon, Sun, ArrowRight, Shield, Gear } from 'phosphor-react-native';
 import * as Haptics from 'expo-haptics';
 import SilhuetaHome from '../../components/silhueta/SilhuetaHome';
 import { SCULPTED_EASING } from '../../constants/easing';
@@ -27,9 +27,9 @@ import { SkeletonHome } from '../../components/ui/Skeletons';
 const AnimatedFlame = Animated.createAnimatedComponent(Flame);
 
 export default function HomeScreen() {
-  const { tokens, theme, toggleTheme } = useTheme();
+  const { tokens, theme, toggleTheme, calmMode, toggleCalmMode } = useTheme();
   const router = useRouter();
-  
+
   const {
     sessaoDoDia,
     carregando: carregandoPrograma,
@@ -81,7 +81,7 @@ export default function HomeScreen() {
     const xpNoNivel = xp - xpMinNivel;
     const xpNecessarioNoNivel = xpMaxNivel - xpMinNivel;
     const proporcao = xpNoNivel / xpNecessarioNoNivel;
-    
+
     return {
       nivel: lvl,
       xpNoNivel,
@@ -92,9 +92,9 @@ export default function HomeScreen() {
 
   const progresso = obterProgressoXP(xpTotal);
 
-  // 2. Dispara animação da chama reativa se streak > 0
+  // 2. Dispara animação da chama reativa se streak > 0 (desligada no modo calmo)
   useEffect(() => {
-    if (streakAtual > 0) {
+    if (streakAtual > 0 && !calmMode) {
       flameScale.value = withRepeat(
         withSequence(
           withTiming(1.15, { duration: 1100, easing: SCULPTED_EASING }),
@@ -106,15 +106,19 @@ export default function HomeScreen() {
     } else {
       flameScale.value = 1;
     }
-  }, [streakAtual]);
+  }, [streakAtual, calmMode]);
 
-  // 3. Dispara animação de crescimento da barra fina de XP
+  // 3. Dispara animação de crescimento da barra fina de XP (instantânea no modo calmo)
   useEffect(() => {
-    xpBarWidth.value = withTiming(progresso.proporcao * 100, {
-      duration: 800,
-      easing: SCULPTED_EASING,
-    });
-  }, [progresso.proporcao]);
+    if (calmMode) {
+      xpBarWidth.value = progresso.proporcao * 100;
+    } else {
+      xpBarWidth.value = withTiming(progresso.proporcao * 100, {
+        duration: 800,
+        easing: SCULPTED_EASING,
+      });
+    }
+  }, [progresso.proporcao, calmMode]);
 
   const flameAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: flameScale.value }],
@@ -123,6 +127,18 @@ export default function HomeScreen() {
   const xpBarAnimatedStyle = useAnimatedStyle(() => ({
     width: `${xpBarWidth.value}%`,
   }));
+
+  // Brilho "dopaminérgico" concentrado na ação/recompensa. Desligado no modo calmo.
+  const glow = (color: string) =>
+    calmMode
+      ? null
+      : {
+          shadowColor: color,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.5,
+          shadowRadius: 12,
+          elevation: 6,
+        };
 
   // 4. Verificação de freeze recente (últimos 7 dias)
   const freezeRecente = (() => {
@@ -137,7 +153,6 @@ export default function HomeScreen() {
   if (carregando) {
     return <SkeletonHome />;
   }
-
 
   if (erroPrograma) {
     return (
@@ -155,37 +170,41 @@ export default function HomeScreen() {
 
   // Mock de conclusão do dia (pode ser integrado com histórico diário futuro)
   const treinoConcluidoHoje = false;
+  const numExercicios = sessaoDoDia
+    ? (sessaoDoDia.exercicios_prescritos || sessaoDoDia.exercicios || []).length
+    : 0;
 
   return (
     <Container>
-      <ScrollView 
-        contentContainerStyle={{ padding: 24, gap: 24 }}
+      <ScrollView
+        contentContainerStyle={{ padding: 24, gap: 22 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Top Header Row */}
-        <View className="flex-row justify-between items-center">
-          <View>
+        {/* Header */}
+        <View className="flex-row justify-between items-start">
+          <View className="flex-1 pr-3">
             <Texto variant="displayL" className="tracking-tight">Hypertropos</Texto>
             <Texto variant="caption" color="secondary">
               Tensão mecânica · Hipertrofia em casa
             </Texto>
           </View>
           <View className="flex-row gap-2">
-            <Pressable 
+            <Pressable
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push('/configuracoes' as any);
               }}
-              className="p-2 bg-elevated rounded-full border border-border-subtle"
+              className="bg-elevated rounded-full border border-border-subtle"
               style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}
               accessibilityLabel="Configurações"
             >
               <Gear size={20} color={tokens.accent.bronze} weight="light" />
             </Pressable>
-            <Pressable 
+            <Pressable
               onPress={toggleTheme}
-              className="p-2 bg-elevated rounded-full border border-border-subtle"
+              className="bg-elevated rounded-full border border-border-subtle"
               style={{ width: 40, height: 40, justifyContent: 'center', alignItems: 'center' }}
+              accessibilityLabel="Alternar tema"
             >
               {theme === 'dark' ? (
                 <Sun size={20} color={tokens.accent.bronze} weight="light" />
@@ -196,22 +215,52 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 1. SILHUETA CORPORAL VETORIAL SKIA DYNAMIC EVOLUTION */}
-        <SilhuetaHome />
+        {/* Modo calmo: reduz brilhos e animações (dias de sobrecarga) */}
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            toggleCalmMode();
+          }}
+          className="flex-row items-center justify-end gap-2"
+          accessibilityRole="switch"
+          accessibilityState={{ checked: calmMode }}
+          accessibilityLabel="Modo calmo"
+        >
+          <Texto variant="caption" color="muted">Modo calmo</Texto>
+          <View
+            style={{
+              width: 42,
+              height: 24,
+              borderRadius: 99,
+              padding: 2,
+              backgroundColor: calmMode ? tokens.accent.bronze : tokens.bg.highlight,
+              borderWidth: 1,
+              borderColor: tokens.border.subtle,
+            }}
+          >
+            <View
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: 9,
+                backgroundColor: calmMode ? tokens.fg.inverse : tokens.fg.secondary,
+                transform: [{ translateX: calmMode ? 18 : 0 }],
+              }}
+            />
+          </View>
+        </Pressable>
 
-        {/* 2. CARD DE TREINO DE HOJE */}
+        {/* ======= AÇÃO PRIMÁRIA: TREINO DE HOJE (foco único, brilhante) ======= */}
         <View className="gap-2">
           <Texto variant="captionBold" color="secondary" className="px-1">
             TREINO DE HOJE
           </Texto>
 
           {sessaoDoDia ? (
-            <Card 
-              padding="lg"
-              elevated
-              onPress={() => router.push('/treino/pre-treino')}
-              className="w-full relative"
-            >
+            <View className="w-full rounded-lg border border-border-strong bg-elevated p-5" style={{ overflow: 'hidden' }}>
+              {/* Borda de luz no topo */}
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, backgroundColor: tokens.accent.gold }} />
+
               <View className="flex-row items-center justify-between mb-3">
                 <View className="flex-row items-center gap-2">
                   <CalendarBlank size={20} color={tokens.accent.bronze} weight="light" />
@@ -233,26 +282,45 @@ export default function HomeScreen() {
               </View>
 
               <Texto variant="h3" className="mb-1">{sessaoDoDia.nome}</Texto>
-              
+
               <View className="flex-row items-center gap-3 mt-2">
                 <Texto variant="body" color="secondary">
-                  {(sessaoDoDia.exercicios_prescritos || sessaoDoDia.exercicios || []).length} exercícios
+                  {numExercicios} exercícios
                 </Texto>
-                <Texto variant="caption" color="muted">
-                  ·
-                </Texto>
-                <Texto variant="caption" color="muted">
-                  ~45 min estimados
-                </Texto>
+                <Texto variant="caption" color="muted">·</Texto>
+                <Texto variant="caption" color="muted">~45 min</Texto>
               </View>
 
-              {/* Ficha Arrow CTA */}
-              <View className="absolute right-4 bottom-4 flex-row items-center gap-1">
-                <Texto variant="caption" color="bronze" className="text-[12px]">Ficha</Texto>
-                <ArrowRight size={14} color={tokens.accent.bronze} weight="light" />
-              </View>
-            </Card>
+              {/* CTA dourado — o elemento mais brilhante da tela */}
+              <Pressable
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  router.push('/treino/pre-treino');
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Começar treino"
+                style={[
+                  {
+                    marginTop: 18,
+                    backgroundColor: tokens.accent.gold,
+                    borderRadius: 14,
+                    paddingVertical: 16,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                  },
+                  glow(tokens.accent.gold),
+                ]}
+              >
+                <Texto variant="bodyBold" style={{ color: tokens.fg.inverse }}>
+                  Começar treino
+                </Texto>
+                <ArrowRight size={18} color={tokens.fg.inverse} weight="bold" />
+              </Pressable>
+            </View>
           ) : (
+            // Dia de descanso — calmo por design (baixo estímulo)
             <Card padding="lg" elevated className="w-full">
               <View className="flex-row items-center gap-2 mb-2">
                 <CalendarBlank size={20} color={tokens.accent.bronze} weight="light" />
@@ -266,53 +334,84 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* 3. STREAK E FREEZES ATUALIZADOS E ANIMADOS */}
-        <View className="flex-row items-center justify-between bg-elevated/40 border border-border-subtle/50 px-4 py-3 rounded-md">
+        {/* ======= PROGRESSO CALMO + RSD-SAFE (sequência + XP) ======= */}
+        <View className="bg-elevated border border-border-subtle rounded-lg p-4">
+          {/* Sequência — enquadrada como acúmulo, sem linguagem de "quebra" */}
           <View className="flex-row items-center gap-3">
-            <AnimatedFlame 
-              size={24} 
-              color={tokens.accent.bronze} 
-              weight={streakAtual > 0 ? 'regular' : 'light'} 
-              style={flameAnimatedStyle}
-            />
-            <View>
-              <View className="flex-row items-center gap-1.5">
-                <Texto variant="bodyBold">
-                  {streakAtual > 0 ? `${streakAtual} dias seguidos` : 'Comece sua sequência hoje'}
-                </Texto>
-                {freezeRecente && (
-                  <Shield size={16} color={tokens.feedback.warning} weight="fill" />
-                )}
-              </View>
+            <View
+              style={[
+                {
+                  width: 44,
+                  height: 44,
+                  borderRadius: 13,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: tokens.bg.highlight,
+                },
+                streakAtual > 0 ? glow(tokens.accent.bronze) : null,
+              ]}
+            >
+              <AnimatedFlame
+                size={24}
+                color={streakAtual > 0 ? tokens.accent.gold : tokens.fg.muted}
+                weight={streakAtual > 0 ? 'fill' : 'light'}
+                style={flameAnimatedStyle}
+              />
+            </View>
+            <View className="flex-1">
+              <Texto variant="bodyBold">
+                {streakAtual > 0
+                  ? `${streakAtual} ${streakAtual === 1 ? 'dia' : 'dias'} de treino acumulados`
+                  : 'Vamos começar sua jornada'}
+              </Texto>
               <Texto variant="caption" color="muted">
-                {freezesDisponiveis > 0 ? `🛡️ ${freezesDisponiveis} freezes disponíveis` : 'Sem freezes de proteção'}
+                {streakAtual > 0 ? 'Continue no seu ritmo' : 'Cada treino conta — sem pressão'}
+              </Texto>
+            </View>
+            {/* Freezes como rede de proteção (cor calma) */}
+            <View className="items-end">
+              <View className="flex-row items-center gap-1">
+                <Shield size={15} color={tokens.feedback.success} weight="fill" />
+                <Texto variant="caption" style={{ color: tokens.feedback.success }}>
+                  {freezesDisponiveis}
+                </Texto>
+              </View>
+              <Texto variant="caption" color="muted" className="text-[10px]">
+                {freezesDisponiveis > 0 ? 'freezes protegem' : 'sem freezes'}
               </Texto>
             </View>
           </View>
-        </View>
 
-        {/* 4. BARRA FINA DE XP RUMO AO PRÓXIMO NÍVEL */}
-        <View className="gap-2">
-          <View className="flex-row justify-between items-end">
-            <Texto variant="captionBold" color="secondary">
-              Nível {progresso.nivel}
-            </Texto>
+          <View style={{ height: 1, backgroundColor: tokens.border.subtle, marginVertical: 14 }} />
+
+          {/* XP — enquadrado como conquista (distância percorrida) */}
+          <View className="flex-row justify-between items-end mb-2">
+            <Texto variant="captionBold">Nível {progresso.nivel}</Texto>
             <Texto variant="caption" color="muted">
-              {Math.round(progresso.xpNoNivel)} / {progresso.xpNecessarioNoNivel} XP
+              {Math.round(progresso.xpNoNivel)} XP conquistados
             </Texto>
           </View>
-          <View className="h-[4px] bg-elevated rounded-full overflow-hidden w-full">
-            <Animated.View 
-              className="bg-accent-bronze h-full"
-              style={xpBarAnimatedStyle}
+          <View className="h-[8px] bg-canvas rounded-full overflow-hidden w-full border border-border-subtle">
+            <Animated.View
+              style={[
+                { height: '100%', backgroundColor: tokens.accent.gold, borderRadius: 99 },
+                xpBarAnimatedStyle,
+                glow(tokens.accent.gold),
+              ]}
             />
           </View>
+          <Texto variant="caption" style={{ color: tokens.feedback.success, marginTop: 8 }}>
+            {Math.round(progresso.proporcao * 100)}% rumo ao Nível {progresso.nivel + 1}
+          </Texto>
         </View>
 
-        {/* Auxiliary Weekly Link */}
-        <View className="items-center mt-2">
-          <Botao 
-            variant="ghost" 
+        {/* ======= SECUNDÁRIO: silhueta / tier (calmo, não compete) ======= */}
+        <SilhuetaHome />
+
+        {/* Link auxiliar — semana completa */}
+        <View className="items-center mt-1">
+          <Botao
+            variant="ghost"
             onPress={() => router.push('/treino/semana')}
             className="flex-row items-center gap-2"
           >
@@ -321,39 +420,41 @@ export default function HomeScreen() {
           </Botao>
         </View>
 
-        {/* Extra option for development */}
-        <View className="mt-8 opacity-20 hover:opacity-100 transition-opacity">
-          <Botao variant="destructive" size="sm" onPress={regenerarPrograma}>
-            Regenerar Rotina Semanal
-          </Botao>
-        </View>
+        {/* Ação de desenvolvimento — visível apenas em builds de dev */}
+        {__DEV__ && (
+          <View className="mt-8 opacity-40">
+            <Botao variant="destructive" size="sm" onPress={regenerarPrograma}>
+              Regenerar Rotina Semanal
+            </Botao>
+          </View>
+        )}
       </ScrollView>
 
-      {/* 5. MODAL / SHEET PROMPT DE FREEZE PROTETOR */}
+      {/* 5. MODAL / SHEET PROMPT DE FREEZE PROTETOR (copy RSD-safe) */}
       {mostrarPromptFreeze && (
-        <Animated.View 
+        <Animated.View
           entering={FadeIn.duration(300)}
           exiting={FadeOut.duration(300)}
           style={[StyleSheet.absoluteFill, styles.modalContainer]}
           className="justify-center items-center px-6"
         >
           <Pressable style={StyleSheet.absoluteFill} onPress={ignorarFreeze} />
-          
+
           <Animated.View
             entering={FadeIn.duration(400).delay(100)}
             style={{ backgroundColor: tokens.bg.elevated, borderColor: tokens.border.strong }}
-            className="w-full max-w-[320px] rounded-[28px] border p-6 items-center shadow-overlay"
+            className="w-full max-w-[320px] rounded-[28px] border p-6 items-center"
           >
-            <View className="w-14 h-14 rounded-full bg-feedback-warning/15 justify-center items-center mb-4">
-              <Shield size={30} color={tokens.feedback.warning} weight="regular" />
+            <View className="w-14 h-14 rounded-full bg-accent-bronze/15 justify-center items-center mb-4">
+              <Shield size={30} color={tokens.accent.bronze} weight="regular" />
             </View>
 
             <Texto variant="h2" className="text-center font-bold mb-2 tracking-tight">
-              Salvar sua Sequência?
+              Proteger sua sequência?
             </Texto>
 
             <Texto variant="body" color="secondary" className="text-center mb-6 leading-[21px]">
-              Você perdeu o dia ontem. Deseja utilizar 1 freeze para preservar sua sequência de {freezeDiasStreak} dias?
+              Faltou ontem — tudo bem. Quer usar 1 freeze para manter seus {freezeDiasStreak} dias acumulados?
             </Texto>
 
             <View className="w-full gap-2">
@@ -361,7 +462,7 @@ export default function HomeScreen() {
                 Usar 1 Freeze
               </Botao>
               <Botao variant="ghost" size="md" onPress={ignorarFreeze} className="w-full">
-                Não, deixe quebrar
+                Agora não
               </Botao>
             </View>
           </Animated.View>

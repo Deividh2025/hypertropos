@@ -4,6 +4,7 @@ import Svg, { Path, Circle, G } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { Texto } from '../ui/Texto';
 import { RegiaoCorpo, RestricaoOnboarding } from '../../types/onboarding';
+import { useTheme } from '../../hooks/useTheme';
 
 interface SilhuetaTocavelProps {
   restricoes: RestricaoOnboarding[];
@@ -11,6 +12,7 @@ interface SilhuetaTocavelProps {
 }
 
 export function SilhuetaTocavel({ restricoes, onPressRegiao }: SilhuetaTocavelProps) {
+  const { tokens } = useTheme();
   const [viewFrente, setViewFrente] = useState(true);
 
   const toggleView = () => {
@@ -30,8 +32,8 @@ export function SilhuetaTocavel({ restricoes, onPressRegiao }: SilhuetaTocavelPr
   const getStyle = (regiao: RegiaoCorpo) => {
     const isSelected = hasRestricao(regiao);
     return {
-      fill: isSelected ? 'var(--color-accent-bronze)' : 'var(--color-bg-elevated)',
-      stroke: 'var(--color-fg-primary)',
+      fill: isSelected ? tokens.accent.bronze : tokens.bg.elevated,
+      stroke: tokens.fg.primary,
       strokeWidth: isSelected ? 2 : 1,
       fillOpacity: isSelected ? 0.4 : 0.1,
       strokeOpacity: 0.6,
@@ -61,15 +63,15 @@ export function SilhuetaTocavel({ restricoes, onPressRegiao }: SilhuetaTocavelPr
             {/* Generic Body Outline (Non-interactive) */}
             <Path
               d="M100 10 C120 10, 120 40, 100 40 C80 40, 80 10, 100 10 Z" // Head
-              fill="var(--color-bg-elevated)" stroke="var(--color-fg-primary)" fillOpacity={0.05} strokeOpacity={0.3} strokeWidth={1}
+              fill={tokens.bg.elevated} stroke={tokens.fg.primary} fillOpacity={0.05} strokeOpacity={0.3} strokeWidth={1}
             />
             <Path
               d="M80 50 L120 50 L140 120 L130 180 L110 180 L100 120 L90 180 L70 180 L60 120 Z" // Torso & Arms
-              fill="var(--color-bg-elevated)" stroke="var(--color-fg-primary)" fillOpacity={0.05} strokeOpacity={0.3} strokeWidth={1}
+              fill={tokens.bg.elevated} stroke={tokens.fg.primary} fillOpacity={0.05} strokeOpacity={0.3} strokeWidth={1}
             />
             <Path
               d="M80 180 L120 180 L125 350 L105 350 L100 220 L95 350 L75 350 Z" // Legs
-              fill="var(--color-bg-elevated)" stroke="var(--color-fg-primary)" fillOpacity={0.05} strokeOpacity={0.3} strokeWidth={1}
+              fill={tokens.bg.elevated} stroke={tokens.fg.primary} fillOpacity={0.05} strokeOpacity={0.3} strokeWidth={1}
             />
 
             {/* Interactive Regions - Simplified geometries placed over the outline */}

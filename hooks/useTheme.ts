@@ -1,35 +1,19 @@
-import { useEffect, useState } from 'react';
-import { useColorScheme as useNativeColorScheme } from 'react-native';
-import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../constants/tokens';
+import { useThemeStore } from '../stores/themeStore';
 
+/**
+ * Hook de tema do app. Lê da fonte única (themeStore, persistido) e devolve
+ * o tema atual, os tokens de cor em hex (para estilos inline) e o modo calmo.
+ *
+ * A sincronização com o NativeWind (classe .dark que troca as variáveis CSS)
+ * é feita em UM único ponto, no _layout raiz — não aqui — para evitar
+ * dessincronia entre o "chrome" da navegação e as classes do NativeWind.
+ */
 export function useTheme() {
-  const systemColorScheme = useNativeColorScheme();
-  const systemTheme: 'light' | 'dark' = systemColorScheme === 'light' ? 'light' : 'dark';
-  const { colorScheme, setColorScheme } = useNativeWindColorScheme();
-  const [theme, setThemeState] = useState<'light' | 'dark'>(systemTheme);
+  const theme = useThemeStore((s) => s.theme);
+  const calmMode = useThemeStore((s) => s.calmMode);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const toggleCalmMode = useThemeStore((s) => s.toggleCalmMode);
 
-  useEffect(() => {
-    AsyncStorage.getItem('theme').then((savedTheme) => {
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        setThemeState(savedTheme);
-        setColorScheme(savedTheme);
-      } else {
-        setThemeState(systemTheme);
-        setColorScheme(systemTheme);
-      }
-    });
-  }, [systemTheme, setColorScheme]);
-
-  const toggleTheme = async () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setThemeState(newTheme);
-    setColorScheme(newTheme);
-    await AsyncStorage.setItem('theme', newTheme);
-  };
-
-  const themeColors = colors[theme];
-
-  return { theme, tokens: themeColors, toggleTheme };
+  return { theme, tokens: colors[theme], calmMode, toggleTheme, toggleCalmMode };
 }
